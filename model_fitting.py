@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split
-DATA_PATH = "AV-GPS-Dataset-1_session_indexed.csv"
+DATA_PATH = "merged_dataset.csv"
 TARGET_COL = "Data Type"  
 VAL_PATH = "val.csv"
 TRAIN_PATH = "train.csv"

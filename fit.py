@@ -165,20 +165,22 @@ X_test_imp = imputer.transform(X_test)
 negative_count = (y_train == 0).sum()
 positive_count = (y_train == 1).sum()
 
-scale_pos_weight = np.sqrt(negative_count / positive_count)
+# scale_pos_weight = np.sqrt(negative_count / positive_count)
+scale_pos_weight = negative_count / positive_count
+
 
 print("\nscale_pos_weight:", scale_pos_weight)
 
 model = XGBClassifier(
-    n_estimators=4500,
-    learning_rate=0.001,
+    n_estimators=3500,
+    learning_rate=0.02,
     max_depth=6,
-    min_child_weight=6,
+    min_child_weight=2,
     subsample=0.85,
     colsample_bytree=0.85,
-    gamma=0.1,
-    reg_alpha=0.05,
-    reg_lambda=2.0,
+    gamma=0.02,
+    reg_alpha=0.01,
+    reg_lambda=1,
     objective="binary:logistic",
     eval_metric="logloss",
     scale_pos_weight=scale_pos_weight,
