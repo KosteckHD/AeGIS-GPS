@@ -1,1 +1,1 @@
-# Ko-ciuszkon-2026
+# Kosciuszkon-2026
