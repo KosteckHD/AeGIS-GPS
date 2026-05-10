@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-DATA_PATH = "AV-GPS-Dataset-1_session_indexed.csv"
+DATA_PATH = "merged_dataset.csv"
 TARGET_COL = "Data Type"  # zmień po sprawdzeniu nazw kolumn
 
 

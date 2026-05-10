@@ -415,3 +415,5 @@ model_package = {
 joblib.dump(model_package, MODEL_PATH)
 
 print(f"\nModel zapisany do pliku: {MODEL_PATH}")
+
+print(f"probu:{y_test_proba}")

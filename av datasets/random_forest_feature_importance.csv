@@ -1,84 +1,84 @@
 feature,importance
-Vertical Vibration,0.11636071551105379
-Throttle (%),0.11568245896951014
-X-Track Error (m)_roll_std_10,0.10301904583079115
-GPS Course_roll_std_10,0.0701273309097666
-X-Track Error (m)_roll_std_5,0.0616350661716251
-X-Track Error (m)_roll_std_3,0.04726038948191408
-GPS Course_roll_std_5,0.0453565014817827
-Altitude Tuning Setpoint,0.04453186088909399
-X-Track Error (m)_roll_mean_10,0.03741071221402032
-X-Track Error (m),0.032242391862329974
-X-Track Error (m)_roll_mean_3,0.029191593968082238
-X-Track Error (m)_roll_mean_5,0.0260491441971246
-Steering Angle (deg),0.024748504454226296
-GPS Course_roll_std_3,0.017292963840220683
-Relative Altitude (m),0.016343603579484774
-Longitudinal Velocity (m/s)_roll_std_10,0.014606225749150123
-Heading (deg),0.01330514567704995
-Lateral Velocity (m/s)_roll_std_10,0.013032670756631407
-Yaw (deg),0.011841530270516184
-Lateral Velocity (m/s)_roll_std_5,0.01117861405365957
-Altitude Tuning,0.01103800198859599
-GPS HDOP_roll_mean_10,0.010592258403931876
-Altitude AMSL (m),0.010114521088078799
-GPS HDOP_roll_mean_3,0.010030209113169241
-Temperature (F),0.009547701039983215
-Longitudinal Velocity (m/s)_roll_std_5,0.008815605296270162
-GPS HDOP_roll_mean_5,0.008448775682640897
-Satellite Count_roll_mean_5,0.007421302823473758
-Satellite Count_roll_mean_10,0.0062512647549348285
-Vertical Velocity (m/s)_roll_std_10,0.00536732540982945
-GPS HDOP,0.00486223716758511
-Roll (deg),0.004673074544113774
-Satellite Count_roll_mean_3,0.004537791938856524
-Pitch (deg),0.004118962360010426
-Vertical Velocity (m/s)_roll_mean_10,0.0032522808156732557
-Satellite Count,0.0029044677044240915
-Longitudinal Velocity (m/s)_roll_mean_10,0.002571649080766761
-Longitudinal Velocity (m/s)_roll_mean_3,0.002489100494664104
-GPS HDOP_roll_std_10,0.002341964763732785
-Longitudinal Velocity (m/s)_roll_mean_5,0.00230172870899415
-Longitudinal Velocity (m/s)_roll_std_3,0.0021148752648380517
-Longitudinal Velocity (m/s),0.0018940426892038065
-Vertical Velocity (m/s)_roll_mean_5,0.001711715310047659
-Satellite Count_roll_std_10,0.0015672818201320873
-GPS Course_roll_mean_10,0.0013394130007874526
-delta_Longitudinal Position (m),0.00126676031158246
-Vertical Velocity (m/s)_roll_mean_3,0.0012019207485292355
-Lateral Velocity (m/s)_roll_mean_5,0.0011181185561835712
-Lateral Velocity (m/s)_roll_std_3,0.0009705675095229416
-GPS Course_roll_mean_5,0.0009157735352751429
-GPS Course,0.0008861631399933149
-Vertical Velocity (m/s),0.0008697500996435208
-Lateral Velocity (m/s),0.0008444482094698243
-GPS Course_roll_mean_3,0.0008093775670212952
-Lateral Velocity (m/s)_roll_mean_10,0.0007976647875426314
-delta_Distance To Home (m),0.0007790552996619287
-Vertical Velocity (m/s)_roll_std_5,0.0007489850427898193
-Lateral Velocity (m/s)_roll_mean_3,0.0007268196431065707
-GPS HDOP_roll_std_5,0.0006576332984899669
-delta_GPS Latitude,0.0006315207556567153
-delta_GPS Course,0.0006291184649200368
-delta_Lateral Position (m),0.0005610354993689516
-Satellite Count_roll_std_5,0.0005465424136089126
-delta_Roll (deg),0.000515997898338334
-delta_X-Track Error (m),0.00040874785242801326
-delta_GPS Longitude,0.0003940428815271703
-delta_Heading To Home (deg),0.0003530279208825481
-GPS HDOP_roll_std_3,0.00021789011738845192
-delta_Longitudinal Velocity (m/s),0.00017082771539119978
-delta_Pitch (deg),0.00017036100111417283
-delta_Lateral Velocity (m/s),0.0001551802889677208
-delta_Yaw (deg),0.00015059385183795486
-delta_Vertical Position (m),0.00013443395427149593
-delta_Yaw Rate (deg/s),0.0001313661780482119
-Yaw Rate (deg/s),0.0001301875341395502
-delta_Heading (deg),0.00013012941063096224
-Satellite Count_roll_std_3,0.00012099977496787667
-delta_GPS VDOP,9.673350303357792e-05
-Vertical Velocity (m/s)_roll_std_3,8.512504325276579e-05
-delta_GPS HDOP,6.572172457511118e-05
-delta_Satellite Count,4.209014788349125e-05
-delta_Vertical Velocity (m/s),3.964436396941992e-05
-delta_Satellite Locks,1.6228222133555774e-06
+Throttle (%),0.10210508563101833
+X-Track Error (m)_roll_std_10,0.09847213608014338
+Vertical Vibration,0.0945477443318774
+GPS Course_roll_std_10,0.09088152875307219
+X-Track Error (m)_roll_std_5,0.05687327127258922
+Altitude Tuning Setpoint,0.05571947680795063
+GPS Course_roll_std_5,0.04417611129826781
+X-Track Error (m)_roll_mean_10,0.037660028466463775
+X-Track Error (m),0.03755804317788159
+X-Track Error (m)_roll_mean_5,0.03615298994061464
+X-Track Error (m)_roll_mean_3,0.03491728336070603
+Steering Angle (deg),0.029484347037838022
+X-Track Error (m)_roll_std_3,0.026886544552523803
+Lateral Velocity (m/s)_roll_std_10,0.017125740909291264
+Longitudinal Velocity (m/s)_roll_std_10,0.01617613267237624
+Relative Altitude (m),0.015545592480968025
+GPS HDOP_roll_mean_10,0.014911907219616681
+GPS HDOP_roll_mean_5,0.012974932802014552
+GPS HDOP_roll_mean_3,0.011911167776905053
+Heading (deg),0.011306861030829793
+Yaw (deg),0.01111827383703885
+Satellite Count_roll_mean_10,0.01067463394407475
+Altitude AMSL (m),0.009114015655652664
+Satellite Count_roll_mean_3,0.008790202879490663
+Satellite Count_roll_mean_5,0.007986859298495205
+Altitude Tuning,0.007906920475545098
+GPS HDOP,0.00767047169502539
+Temperature (F),0.00760834245933841
+Satellite Count,0.006286157537896289
+Longitudinal Velocity (m/s)_roll_mean_10,0.0062756590578702115
+GPS Course_roll_std_3,0.005931583990665609
+Longitudinal Velocity (m/s)_roll_mean_3,0.005700801718862769
+Roll (deg),0.004604524718483352
+Longitudinal Velocity (m/s)_roll_std_5,0.004357938471408152
+Lateral Velocity (m/s)_roll_std_5,0.004001491576778532
+Vertical Velocity (m/s)_roll_mean_10,0.003811526356939263
+Pitch (deg),0.003693950350555309
+Vertical Velocity (m/s)_roll_std_10,0.0033739112844003417
+Longitudinal Velocity (m/s),0.0027997782878153702
+GPS HDOP_roll_std_10,0.0025078928193212257
+Vertical Velocity (m/s)_roll_mean_5,0.002301975837154469
+Longitudinal Velocity (m/s)_roll_mean_5,0.0022695483457540167
+Vertical Velocity (m/s)_roll_mean_3,0.0017790122838287309
+Longitudinal Velocity (m/s)_roll_std_3,0.0017525868676826846
+Satellite Count_roll_std_10,0.0017146065921935596
+GPS Course_roll_mean_10,0.0015924629833622588
+delta_Longitudinal Position (m),0.0014827367029351262
+Lateral Velocity (m/s)_roll_std_3,0.001410212459931371
+Vertical Velocity (m/s),0.0011994211703384996
+delta_Distance To Home (m),0.0011539898590801035
+GPS Course_roll_mean_5,0.0010728808773628434
+Lateral Velocity (m/s)_roll_mean_5,0.0010297511284505284
+GPS Course_roll_mean_3,0.0010072310032882878
+Lateral Velocity (m/s)_roll_mean_10,0.0009606094021674549
+GPS Course,0.0009267733538270939
+delta_Lateral Position (m),0.0008651119324741533
+GPS HDOP_roll_std_5,0.0007337036443562147
+Lateral Velocity (m/s)_roll_mean_3,0.0007295745145020199
+delta_GPS Latitude,0.000669393517941908
+Lateral Velocity (m/s),0.0006007945956286607
+Vertical Velocity (m/s)_roll_std_5,0.0005377768160532303
+Satellite Count_roll_std_5,0.0005291451897573579
+delta_X-Track Error (m),0.0004885997512406577
+delta_GPS Longitude,0.0004397025742027237
+delta_Heading To Home (deg),0.00042224058509962944
+delta_Roll (deg),0.00040176380698202463
+delta_GPS Course,0.00030640050725806256
+delta_Vertical Position (m),0.00024844369595211765
+GPS HDOP_roll_std_3,0.0002134107418593469
+delta_Longitudinal Velocity (m/s),0.00018968095470828908
+Yaw Rate (deg/s),0.00016028603280461728
+delta_Lateral Velocity (m/s),0.0001542990223633041
+delta_Heading (deg),0.00013660306933330289
+delta_Yaw Rate (deg/s),0.00013171068632834173
+delta_Pitch (deg),0.00013153694558328176
+delta_Yaw (deg),0.0001286211176275297
+Vertical Velocity (m/s)_roll_std_3,0.00011545287023901729
+Satellite Count_roll_std_3,0.0001085213709158482
+delta_GPS VDOP,0.00010067006954988267
+delta_Satellite Count,7.181951745906182e-05
+delta_GPS HDOP,6.858847617516241e-05
+delta_Vertical Velocity (m/s),4.5976299260900486e-05
+delta_Satellite Locks,1.4510808380424643e-05
