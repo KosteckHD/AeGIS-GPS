@@ -18,7 +18,7 @@ app.add_middleware(
 )
 
 # Ścieżka do pliku z danymi
-CSV_PATH = "test2_data.csv"
+CSV_PATH = "final_test_data2.csv"
 
 # Wczytanie i posortowanie danych w pamięci przy starcie API
 print("Wczytywanie i sortowanie test2_data.csv ...")
@@ -52,16 +52,20 @@ def root():
 async def stream_data():
     """
     Endpoint symulujący napływ danych na żywo poprzez Server-Sent Events (SSE).
-    Wysyła jeden wiersz co określony interwał z posortowanego zbioru test2_data.csv.
+    Wysyła wszystkie punkty z jednego momentu czasu, czeka 1s, potem wysyła następny moment.
     """
     async def data_generator():
+        last_time = None
         for i, record in enumerate(records):
             cleaned = clean_dict(record)
-            # Standard SSE: data: {"tu": "dane"}\n\n
-            yield f"data: {json.dumps(cleaned)}\n\n"
+            current_time = cleaned.get("Run Time")
             
-            # Symulacja interwału co 200 milisekund miedzy zdarzeniami (dostosuj do swoich potrzeb)
-            await asyncio.sleep(0.2)
+            # Jeśli zmienił się znacznik czasu, czekaj 1 sekundę PRZED wysłaniem nowych danych
+            if last_time is not None and current_time != last_time:
+                await asyncio.sleep(1.0)
+                
+            yield f"data: {json.dumps(cleaned)}\n\n"
+            last_time = current_time
 
     return StreamingResponse(data_generator(), media_type="text/event-stream")
 
