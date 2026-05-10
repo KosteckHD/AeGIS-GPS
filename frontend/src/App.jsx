@@ -4,11 +4,11 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
   ResponsiveContainer, ComposedChart, Bar, Legend
 } from 'recharts';
-import { Crosshair, RefreshCw, Activity, ShieldAlert, ShieldCheck, Wifi, WifiOff, GitBranch } from 'lucide-react';
+import { AlertTriangle, Clock3, Cpu, Crosshair, Gauge, GitBranch, Radio, RefreshCw, Activity, ShieldAlert, ShieldCheck, Wifi, WifiOff, Zap } from 'lucide-react';
 import FeatureGraphPage from './components/FeatureGraphPage';
 
 // --- NARZĘDZIA POMOCNICZE ---
-const panelClass = "hud-panel pointer-events-auto bg-black/78 border border-emerald-300/35 backdrop-blur-xl rounded-sm shadow-[0_0_34px_rgba(16,185,129,0.12)]";
+const panelClass = "hud-panel pointer-events-auto shrink-0 bg-black/78 border border-emerald-300/35 backdrop-blur-xl rounded-sm shadow-[0_0_34px_rgba(16,185,129,0.12)]";
 const chartPanelClass = "hud-panel bg-black/64 p-3 rounded-sm border border-emerald-300/24 flex flex-col min-h-0 shadow-inner shadow-emerald-400/[0.03]";
 const chartTitleClass = "text-[11px] text-slate-100 font-semibold tracking-[0.14em] mb-2 flex justify-between items-center shrink-0 uppercase";
 
@@ -32,17 +32,18 @@ const tooltipStyle = {
 const labelStyle = { color: '#6ee7b7', fontSize: '11px', fontWeight: 700 };
 const tickStyle = { fontSize: 11, fill: '#a7f3d0', fontWeight: 600 };
 const lineAnimation = { isAnimationActive: true, animationDuration: 450, animationEasing: 'ease-out' };
+const API_BASE_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:8000`;
 
 // ==========================================
 // SEKCJA 1: NAVBAR
 // ==========================================
-const NavbarSection = ({ dataCount, isConnected, onShowFeatureGraph }) => (
-  <div className={`${panelClass} p-4 flex flex-col gap-3 min-w-[320px]`}>
+const NavbarSection = ({ dataCount, isConnected, runtimeStats, onShowFeatureGraph }) => (
+  <div className={`${panelClass} p-4 flex flex-col gap-3 w-[390px] max-w-[calc(100vw-32px)]`}>
     <div className="flex items-center gap-3 border-b border-emerald-400/20 pb-3">
       <ShieldCheck size={24} className="text-emerald-300 drop-shadow-[0_0_10px_rgba(52,211,153,0.7)]" />
       <div>
         <h1 className="glitch-title text-xl font-black tracking-[0.18em] text-emerald-100 leading-tight">AEGIS GPS</h1>
-        <div className="text-[10px] text-emerald-300/80 tracking-[0.24em]">ADVANCED DRONE SPOOFING DETECTION</div>
+        <div className="text-[10px] text-emerald-300/80 tracking-[0.16em] leading-snug">ADVANCED DRONE SPOOFING DETECTION</div>
       </div>
     </div>
     <div className="grid grid-cols-3 gap-2 mt-1">
@@ -65,6 +66,20 @@ const NavbarSection = ({ dataCount, isConnected, onShowFeatureGraph }) => (
         </span>
       </div>
     </div>
+    <div className="grid grid-cols-3 gap-2 border-t border-emerald-300/16 pt-2">
+      <div className="bg-white/[0.045] border border-emerald-300/16 p-2 rounded-sm min-w-0">
+        <div className="flex items-center gap-1 text-[9px] text-slate-400 tracking-[0.12em]"><Cpu size={10}/> MODEL</div>
+        <div className="text-[11px] text-emerald-100 font-semibold truncate">{runtimeStats.model || 'awaiting'}</div>
+      </div>
+      <div className="bg-white/[0.045] border border-emerald-300/16 p-2 rounded-sm">
+        <div className="flex items-center gap-1 text-[9px] text-slate-400 tracking-[0.12em]"><Zap size={10}/> SCORED</div>
+        <div className="text-[11px] text-emerald-100 font-semibold">{runtimeStats.totalScored || 0}</div>
+      </div>
+      <div className="bg-white/[0.045] border border-emerald-300/16 p-2 rounded-sm">
+        <div className="flex items-center gap-1 text-[9px] text-slate-400 tracking-[0.12em]"><Clock3 size={10}/> LATENCY</div>
+        <div className="text-[11px] text-emerald-100 font-semibold">{fmt(runtimeStats.lastLatency, 2)} ms</div>
+      </div>
+    </div>
     <button
       onClick={onShowFeatureGraph}
       className="flex items-center justify-center gap-2 text-[11px] font-semibold tracking-[0.12em] uppercase border border-emerald-300/28 bg-emerald-300/8 text-emerald-100 px-3 py-2 rounded-sm hover:bg-emerald-300/14 hover:border-emerald-200/55 transition-all"
@@ -77,7 +92,7 @@ const NavbarSection = ({ dataCount, isConnected, onShowFeatureGraph }) => (
 // ==========================================
 // SEKCJA 2: GLOBUS, ACTIVE TARGETS, UNLOCK
 // ==========================================
-const GlobeBackground = ({ globeRef, globeData, alerts, focusedDroneId, isAutoRotate }) => {
+const GlobeBackground = ({ globeRef, globeData, alerts, focusedDroneId, isAutoRotate, handleLockOnTarget }) => {
   useEffect(() => {
     if (globeRef.current) {
       globeRef.current.controls().autoRotate = isAutoRotate;
@@ -114,9 +129,12 @@ const GlobeBackground = ({ globeRef, globeData, alerts, focusedDroneId, isAutoRo
           const isFocused = d.mId === focusedDroneId;
           const pulseClass = 'animate-pulse';
           const zIndexVal = isFocused ? 999 : (isDanger ? 10 : 1);
+          el.style.pointerEvents = 'auto';
+          el.style.cursor = 'crosshair';
+          el.onclick = () => handleLockOnTarget(d.mId);
 
           el.innerHTML = `
-            <div style="position: relative; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: ${zIndexVal};">
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; pointer-events: auto; z-index: ${zIndexVal};">
               <div class="${pulseClass}" style="position: relative; width: ${isFocused ? '20px' : '14px'}; height: ${isFocused ? '20px' : '14px'}; border-radius: 50%; background-color: ${isDanger ? '#ef4444' : d.color}; box-shadow: 0 0 20px 5px ${isDanger ? '#ef4444' : d.color}; border: ${isFocused ? '3px solid white' : '1px solid white'};"></div>
               <div class="absolute -top-8 text-[11px] whitespace-nowrap px-1.5 py-0.5 border font-bold ${isFocused ? 'bg-white text-black border-white z-50' : 'bg-black/90 border-gray-600'}" style="${!isFocused ? `color: ${d.color};` : ''}">
                 ID:${d.mId} [${(d.probability * 100).toFixed(0)}%]
@@ -131,7 +149,7 @@ const GlobeBackground = ({ globeRef, globeData, alerts, focusedDroneId, isAutoRo
 };
 
 const ActiveTargetsList = ({ activeDrones, focusedDroneId, handleLockOnTarget }) => (
-  <div className={`${panelClass} p-3 flex flex-col gap-2 w-[320px] max-h-[250px] overflow-hidden`}>
+  <div className={`${panelClass} p-3 flex flex-col gap-2 w-[390px] max-w-[calc(100vw-32px)] max-h-[250px] overflow-hidden`}>
     <div className="flex justify-between items-center border-b border-emerald-400/20 pb-2">
       <h3 className="text-[11px] font-semibold text-slate-100 tracking-[0.14em]">ACTIVE TARGETS / FLEET</h3>
       <span className="text-[10px] bg-emerald-300/14 px-2 py-0.5 rounded-sm text-emerald-100 border border-emerald-300/35">{activeDrones.length} ONLINE</span>
@@ -141,19 +159,19 @@ const ActiveTargetsList = ({ activeDrones, focusedDroneId, handleLockOnTarget })
         <span className="text-[11px] text-slate-300 tracking-[0.16em] uppercase py-2 text-center">Awaiting Connection...</span>
       ) : (
         activeDrones.map(drone => {
-          const isDanger = drone.isCompromised || drone.probability > 0.5;
+          const isDanger = drone.isCompromised || drone.probability > 0.5 || drone["Model Prediction"] === 1;
           return (
             <div 
               key={drone.mId}
               onClick={() => handleLockOnTarget(drone.mId)}
-              className={`target-row flex justify-between items-center p-2 cursor-crosshair border-l-2 rounded-sm transition-all ${focusedDroneId === drone.mId ? ' border-white' : ( isDanger ?  ('hover:bg-red-500 border-red-700') : ('hover:bg-emerald-500 border-emerald-700') ) } `}
+              className={`target-row flex justify-between items-center p-2 cursor-crosshair border-l-2 rounded-sm transition-all ${focusedDroneId === drone.mId ? 'border-white bg-white/10' : ( isDanger ?  ('bg-red-500/10 hover:bg-red-500/20 border-red-400') : ('hover:bg-emerald-500/12 border-emerald-500') ) } `}
             >
               <div className="flex flex-col">
                 <span className="text-[11px] font-semibold text-emerald-100">ID: {drone.mId}</span>
                 <span className="text-[10px] text-slate-300">LAT: {drone.lat?.toFixed(3)} | LNG: {drone.lng?.toFixed(3)}</span>
               </div>
-              <div className={`text-[10px] font-bold px-2 py-1 rounded-sm ${isDanger ? ('bg-red-600 text-red-300 animate-[pulse_1s_ease-in-out]') : ('bg-green-600 text-green-300')}`}>
-                {(drone.probability * 100).toFixed(0)}% SGN
+              <div className={`text-[10px] font-bold px-2 py-1 rounded-sm border ${isDanger ? ('bg-red-500/22 text-red-50 border-red-300/45 animate-[pulse_1s_ease-in-out]') : ('bg-emerald-500/16 text-emerald-50 border-emerald-300/30')}`}>
+                {isDanger ? 'MODEL HIT' : `${(drone.probability * 100).toFixed(1)}%`}
               </div>
             </div>
           );
@@ -179,6 +197,184 @@ const GlobeControls = ({ isAutoRotate, setIsAutoRotate, focusedDroneId, setFocus
     </button>
   </div>
 );
+
+const fmt = (value, digits = 2) => {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return 'N/A';
+  return Number(value).toFixed(digits);
+};
+
+const clamp01 = value => Math.max(0, Math.min(1, Number(value) || 0));
+
+const fmtValue = (value, digits = 2) => {
+  if (digits === null) return value ?? 'N/A';
+  return fmt(value, digits);
+};
+
+const RiskBar = ({ label, value, detail, danger }) => (
+  <div className="space-y-1">
+    <div className="flex justify-between gap-2 text-[10px]">
+      <span className="text-slate-300 tracking-[0.11em] uppercase truncate">{label}</span>
+      <span className={danger ? 'text-red-100 font-semibold' : 'text-emerald-100 font-semibold'}>{detail}</span>
+    </div>
+    <div className="h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+      <div
+        className={`h-full ${danger ? 'bg-red-400 shadow-[0_0_12px_rgba(248,113,113,0.75)]' : 'bg-emerald-300 shadow-[0_0_12px_rgba(52,211,153,0.65)]'}`}
+        style={{ width: `${Math.round(clamp01(value) * 100)}%` }}
+      />
+    </div>
+  </div>
+);
+
+const TargetIntelPanel = ({ target }) => {
+  if (!target) {
+    return (
+      <div className={`${panelClass} w-[320px] p-3`}>
+        <div className="text-[11px] font-semibold text-slate-100 tracking-[0.14em] border-b border-emerald-400/20 pb-2">
+          TARGET INTEL
+        </div>
+        <div className="mt-3 text-[11px] text-slate-300 border border-dashed border-emerald-300/24 bg-white/[0.035] p-3 rounded-sm">
+          Click a target on the globe or fleet list to inspect current GNSS state.
+        </div>
+      </div>
+    );
+  }
+
+  const isSpoofed = target.isCompromised || target.probability > 0.5 || target["Model Prediction"] === 1;
+  const satCount = Number(target["Satellite Count"]);
+  const hdop = Number(target["GPS HDOP"]);
+  const xTrack = Number(target["X-Track Error (m)"]);
+  const threshold = Number(target["Model Threshold"]);
+  const riskFactors = [
+    ['Satellite Loss', clamp01((8 - satCount) / 6), Number.isFinite(satCount) ? `${satCount} locked` : 'N/A', satCount <= 6],
+    ['HDOP Drift', clamp01((hdop - 1) / 8), Number.isFinite(hdop) ? hdop.toFixed(2) : 'N/A', hdop >= 3],
+    ['Route Error', clamp01(xTrack / 45), Number.isFinite(xTrack) ? `${xTrack.toFixed(1)} m` : 'N/A', xTrack >= 8],
+    ['Model Margin', threshold ? clamp01(target.probability / Math.max(threshold * 80, 0.001)) : clamp01(target.probability), `thr ${fmt(threshold, 3)}`, isSpoofed],
+  ];
+
+  const rows = [
+    ['Run Time', target["Run Time"], null],
+    ['Satellites', target["Satellite Count"], 0],
+    ['GPS HDOP', target["GPS HDOP"], 3],
+    ['X-Track Error', target["X-Track Error (m)"], 2],
+    ['Altitude', target["Vertical Position (m)"], 2],
+    ['Altitude Setpoint', target["Altitude Setpoint (m)"], 2],
+    ['Model Threshold', target["Model Threshold"], 3],
+  ];
+
+  return (
+    <div className={`${panelClass} w-[320px] p-3`}>
+      <div className="flex items-center justify-between border-b border-emerald-400/20 pb-2">
+        <h3 className="text-[11px] font-semibold text-slate-100 tracking-[0.14em]">TARGET INTEL</h3>
+        <span className={`text-[10px] px-2 py-0.5 rounded-sm border font-bold ${isSpoofed ? 'text-red-100 bg-red-500/18 border-red-300/35' : 'text-emerald-100 bg-emerald-300/12 border-emerald-300/30'}`}>
+          {isSpoofed ? 'SPOOF SUSPECT' : 'CLEAN'}
+        </span>
+      </div>
+
+      <div className="mt-3 flex items-end justify-between">
+        <div>
+          <div className="text-[10px] text-slate-400 tracking-[0.14em]">MEASUREMENT ID</div>
+          <div className="text-2xl font-black text-emerald-50">{target.mId}</div>
+        </div>
+        <div className="text-right">
+          <div className="text-[10px] text-slate-400 tracking-[0.14em]">MODEL PROBABILITY</div>
+          <div className={`text-2xl font-black ${isSpoofed ? 'text-red-100' : 'text-emerald-100'}`}>
+            {(target.probability * 100).toFixed(1)}%
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        {rows.map(([label, value, digits]) => (
+          <div key={label} className="bg-white/[0.045] border border-emerald-300/16 px-2 py-2 rounded-sm min-w-0">
+            <div className="text-[9px] text-slate-400 tracking-[0.11em] uppercase truncate">{label}</div>
+            <div className="text-sm font-semibold text-slate-50 truncate">{fmtValue(value, digits)}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 bg-white/[0.035] border border-emerald-300/16 p-2 rounded-sm space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] text-slate-300 tracking-[0.14em] uppercase flex items-center gap-1"><Gauge size={11}/> Risk Factors</span>
+          <span className={`text-[10px] font-semibold ${isSpoofed ? 'text-red-100' : 'text-emerald-100'}`}>
+            {target["Inference Mode"] || 'live model'}
+          </span>
+        </div>
+        {riskFactors.map(([label, value, detail, danger]) => (
+          <RiskBar key={label} label={label} value={value} detail={detail} danger={danger} />
+        ))}
+      </div>
+
+      <div className={`mt-3 border p-2 rounded-sm ${isSpoofed ? 'bg-red-500/10 border-red-300/30' : 'bg-emerald-500/8 border-emerald-300/20'}`}>
+        <div className="text-[10px] tracking-[0.14em] uppercase text-slate-300">Operator Recommendation</div>
+        <div className={`mt-1 text-[11px] leading-snug ${isSpoofed ? 'text-red-50' : 'text-emerald-50'}`}>
+          {isSpoofed
+            ? 'Flag GNSS as degraded, verify inertial/vehicle telemetry and hold autonomous route updates.'
+            : 'Signal pattern is nominal. Keep monitoring constellation quality and route deviation.'}
+        </div>
+      </div>
+
+      <div className="mt-3 bg-black/58 border border-emerald-300/16 p-2 rounded-sm">
+        <div className="flex justify-between text-[10px] text-slate-300">
+          <span>LAT {fmt(target.lat, 4)}</span>
+          <span>LNG {fmt(target.lng, 4)}</span>
+        </div>
+        <div className="mt-2 h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+          <div
+            className={`h-full ${isSpoofed ? 'bg-red-400 shadow-[0_0_14px_rgba(248,113,113,0.8)]' : 'bg-emerald-300 shadow-[0_0_14px_rgba(52,211,153,0.7)]'}`}
+            style={{ width: `${Math.min(100, Math.max(0, target.probability * 100))}%` }}
+          />
+        </div>
+        <div className="mt-2 text-[10px] text-slate-400 truncate">
+          {target["Model Source"] || 'model probability from live API'} | {fmt(target["Inference Latency (ms)"], 2)} ms
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MissionSummaryPanel = ({ runtimeStats, activeDrones }) => {
+  const online = activeDrones.length;
+  const compromised = activeDrones.filter(d => d.isCompromised || d["Model Prediction"] === 1).length;
+  const avgProbability = activeDrones.length
+    ? activeDrones.reduce((sum, item) => sum + (Number(item.probability) || 0), 0) / activeDrones.length
+    : 0;
+  const detectionRate = runtimeStats.totalScored
+    ? runtimeStats.detections / runtimeStats.totalScored
+    : 0;
+
+  return (
+    <div className={`${panelClass} w-[320px] p-3`}>
+      <div className="flex items-center justify-between border-b border-emerald-400/20 pb-2">
+        <h3 className="text-[11px] font-semibold text-slate-100 tracking-[0.14em]">LIVE EVALUATION</h3>
+        <span className="text-[10px] text-emerald-100 bg-emerald-300/12 border border-emerald-300/28 px-2 py-0.5 rounded-sm">
+          {runtimeStats.mode || 'warming up'}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-2 mt-3">
+        <div className="bg-white/[0.045] border border-emerald-300/16 p-2 rounded-sm">
+          <div className="text-[9px] text-slate-400 tracking-[0.12em] uppercase flex items-center gap-1"><Radio size={10}/> Online</div>
+          <div className="text-xl font-black text-emerald-50">{online}</div>
+        </div>
+        <div className="bg-red-500/10 border border-red-300/28 p-2 rounded-sm">
+          <div className="text-[9px] text-red-100/80 tracking-[0.12em] uppercase flex items-center gap-1"><AlertTriangle size={10}/> Compromised</div>
+          <div className="text-xl font-black text-red-50">{compromised}</div>
+        </div>
+        <div className="bg-white/[0.045] border border-emerald-300/16 p-2 rounded-sm">
+          <div className="text-[9px] text-slate-400 tracking-[0.12em] uppercase">Detections</div>
+          <div className="text-xl font-black text-emerald-50">{runtimeStats.detections || 0}</div>
+        </div>
+        <div className="bg-white/[0.045] border border-emerald-300/16 p-2 rounded-sm">
+          <div className="text-[9px] text-slate-400 tracking-[0.12em] uppercase">Threat Ratio</div>
+          <div className="text-xl font-black text-emerald-50">{(detectionRate * 100).toFixed(1)}%</div>
+        </div>
+      </div>
+      <div className="mt-3 space-y-2">
+        <RiskBar label="Fleet Avg Probability" value={avgProbability} detail={`${(avgProbability * 100).toFixed(1)}%`} danger={avgProbability > 0.1} />
+        <RiskBar label="Stream Progress" value={(runtimeStats.totalScored || 0) / 3600} detail={`${runtimeStats.totalScored || 0}/3600`} danger={false} />
+      </div>
+    </div>
+  );
+};
 
 // ==========================================
 // SEKCJA 3: STATYSTYKI (ZOPTYMALIZOWANA)
@@ -217,7 +413,10 @@ const StatsSection = ({ alerts, chartData, handleLockOnTarget }) => (
                       <div className="text-[10px] text-slate-200 tracking-[0.12em] truncate">ID: {alert.mId}</div>
                       <div className="text-[11px] font-semibold text-red-100 flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping shrink-0"></span> 
-                        <span className="truncate">SPOOF {(alert.probability * 100).toFixed(0)}%</span>
+                        <span className="truncate">MODEL HIT {(alert.probability * 100).toFixed(2)}%</span>
+                      </div>
+                      <div className="text-[9px] text-slate-300 truncate">
+                        SAT {alert["Satellite Count"] ?? 'N/A'} | HDOP {fmt(alert["GPS HDOP"], 2)} | XTE {fmt(alert["X-Track Error (m)"], 1)}m
                       </div>
                     </div>
                     <div className="text-[9px] text-slate-100 bg-black/80 px-1.5 py-0.5 border border-red-200/24 font-mono shrink-0 rounded-sm">
@@ -381,6 +580,14 @@ const SOCDashboard = () => {
   const [, setCompromisedIds] = useState(() => new Set());
   const [isAutoRotate, setIsAutoRotate] = useState(true);
   const [focusedDroneId, setFocusedDroneId] = useState(null);
+  const [runtimeStats, setRuntimeStats] = useState({
+    detections: 0,
+    lastLatency: 0,
+    mode: '',
+    model: '',
+    threshold: null,
+    totalScored: 0,
+  });
   // NOWE: stan połączenia SSE
   const [isConnected, setIsConnected] = useState(false);
   const globeEl = useRef();
@@ -390,7 +597,7 @@ const SOCDashboard = () => {
   const MAX_POINTS_PER_DRONE = 50;
 
   useEffect(() => {
-    const eventSource = new EventSource('http://192.168.1.235:8000/stream');
+    const eventSource = new EventSource(`${API_BASE_URL}/stream`);
     
     eventSource.onopen = () => setIsConnected(true);
 
@@ -432,6 +639,7 @@ const SOCDashboard = () => {
     const probability = newData["Probability"] !== undefined 
       ? newData["Probability"] 
       : (newData["Data Type"] === 1 ? (0.7 + Math.random() * 0.2) : (0.05 + Math.random() * 0.15));
+    const isModelSpoof = newData["Model Prediction"] === 1;
 
     const parsedData = {
       ...newData,
@@ -441,8 +649,17 @@ const SOCDashboard = () => {
       verticalVelocity: newData["Vertical Velocity (m/s)"] || 0,
       gpsHdop: newData["GPS HDOP"] || 1,
       satCount: newData["Satellite Count"] || 10,
-      isCompromised: probability > 0.5 || compromisedIdsRef.current.has(mId)
+      isCompromised: isModelSpoof || probability > 0.5 || compromisedIdsRef.current.has(mId)
     };
+
+    setRuntimeStats(prev => ({
+      detections: prev.detections + (isModelSpoof ? 1 : 0),
+      lastLatency: newData["Inference Latency (ms)"] ?? prev.lastLatency,
+      mode: newData["Inference Mode"] || prev.mode,
+      model: newData["Model Source"] || prev.model,
+      threshold: newData["Model Threshold"] ?? prev.threshold,
+      totalScored: newData["Realtime Scored Count"] ?? (prev.totalScored + 1),
+    }));
 
     setDataStream(prev => {
       const updated = [...prev, parsedData];
@@ -465,7 +682,9 @@ const SOCDashboard = () => {
       return result;
     });
 
-    if (probability > 0.5) {
+    if (isModelSpoof || probability > 0.5) {
+      setFocusedDroneId(prev => prev ?? mId);
+
       setCompromisedIds(prev => {
         if (prev.has(mId)) return prev;
         const updated = new Set(prev);
@@ -536,6 +755,7 @@ const SOCDashboard = () => {
 
   const focusedStream = focusedDroneId ? dataStream.filter(d => d.mId === focusedDroneId) : dataStream;
   const chartData = focusedStream.slice(-30);
+  const focusedTarget = focusedDroneId ? activeDrones.find(d => d.mId === focusedDroneId) : null;
 
   if (currentView === 'feature-graph') {
     return <FeatureGraphPage onBack={() => setCurrentView('dashboard')} />;
@@ -551,6 +771,7 @@ const SOCDashboard = () => {
         alerts={alerts} 
         focusedDroneId={focusedDroneId} 
         isAutoRotate={isAutoRotate} 
+        handleLockOnTarget={handleLockOnTarget}
       />
 
       {/* WARSTWA INTERFEJSU */}
@@ -560,23 +781,26 @@ const SOCDashboard = () => {
         {/* GÓRNY HUD (Left & Right) */}
         <div className="flex justify-between items-start w-full">
           {/* Lewa strona */}
-          <div className="flex flex-col gap-3">
+          <div className="pointer-events-auto flex flex-col gap-3 max-h-[calc(100vh-330px)] overflow-y-auto custom-scrollbar pr-1">
             <NavbarSection
               dataCount={dataStream.length}
               isConnected={isConnected}
+              runtimeStats={runtimeStats}
               onShowFeatureGraph={() => setCurrentView('feature-graph')}
             />
             <ActiveTargetsList activeDrones={activeDrones} focusedDroneId={focusedDroneId} handleLockOnTarget={handleLockOnTarget} />
           </div>
 
           {/* Prawa strona */}
-          <div className="flex flex-col gap-3">
+          <div className="pointer-events-auto flex flex-col gap-3 max-h-[calc(100vh-330px)] overflow-y-auto custom-scrollbar pr-1">
             <GlobeControls 
               isAutoRotate={isAutoRotate} 
               setIsAutoRotate={setIsAutoRotate} 
               focusedDroneId={focusedDroneId} 
               setFocusedDroneId={setFocusedDroneId} 
             />
+            <TargetIntelPanel target={focusedTarget} />
+            <MissionSummaryPanel runtimeStats={runtimeStats} activeDrones={activeDrones} />
           </div>
         </div>
 
