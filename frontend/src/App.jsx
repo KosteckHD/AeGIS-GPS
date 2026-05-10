@@ -2,11 +2,15 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Globe from 'react-globe.gl';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
-  ResponsiveContainer, BarChart, Bar, Legend
+  ResponsiveContainer, ComposedChart, Bar, Legend
 } from 'recharts';
-import { AlertTriangle, Crosshair, RefreshCw, Activity, ShieldAlert, ShieldCheck, Wifi, WifiOff } from 'lucide-react';
+import { Crosshair, RefreshCw, Activity, ShieldAlert, ShieldCheck, Wifi, WifiOff } from 'lucide-react';
 
 // --- NARZĘDZIA POMOCNICZE ---
+const panelClass = "pointer-events-auto bg-slate-950/70 border border-cyan-400/15 backdrop-blur-xl rounded-lg shadow-[0_24px_70px_rgba(2,8,23,0.45)]";
+const chartPanelClass = "bg-slate-950/70 p-3 rounded-lg border border-white/10 flex flex-col min-h-0 shadow-inner shadow-white/[0.02]";
+const chartTitleClass = "text-[11px] text-slate-200 font-semibold tracking-wide mb-2 flex justify-between items-center shrink-0";
+
 const getThreatColor = (prob) => {
   const safeProb = Math.max(0, Math.min(1, prob || 0));
   const r = safeProb < 0.5 ? Math.floor(safeProb * 2 * 255) : 255;
@@ -16,43 +20,44 @@ const getThreatColor = (prob) => {
 
 // Wspólny styl dla RechartsTooltip
 const tooltipStyle = {
-  backgroundColor: '#080808',
-  borderColor: '#1f2937',
-  color: '#10b981',
-  fontSize: '10px',
-  borderRadius: '2px',
-  boxShadow: '0 0 10px rgba(16,185,129,0.15)'
+  backgroundColor: 'rgba(15, 23, 42, 0.96)',
+  border: '1px solid rgba(125, 211, 252, 0.22)',
+  color: '#e2e8f0',
+  fontSize: '12px',
+  borderRadius: '8px',
+  boxShadow: '0 20px 45px rgba(2, 8, 23, 0.35)'
 };
 
-const labelStyle = { color: '#6b7280', fontSize: '10px' };
+const labelStyle = { color: '#94a3b8', fontSize: '11px', fontWeight: 600 };
+const tickStyle = { fontSize: 11, fill: '#94a3b8', fontWeight: 500 };
 
 // ==========================================
 // SEKCJA 1: NAVBAR
 // ==========================================
 const NavbarSection = ({ dataCount, isConnected }) => (
-  <div className="pointer-events-auto bg-black/70 border border-green-500/30 backdrop-blur-md p-4 rounded-sm shadow-[0_0_20px_rgba(16,185,129,0.12)] flex flex-col gap-2 min-w-[300px]">
-    <div className="flex items-center gap-3 border-b border-green-900/40 pb-2">
-      <ShieldCheck size={24} className="text-green-400" />
+  <div className={`${panelClass} p-4 flex flex-col gap-3 min-w-[320px]`}>
+    <div className="flex items-center gap-3 border-b border-cyan-400/10 pb-3">
+      <ShieldCheck size={24} className="text-cyan-300" />
       <div>
-        <h1 className="text-xl font-bold tracking-widest text-green-400 leading-tight">AEGIS GPS</h1>
-        <div className="text-[10px] text-green-600 tracking-[0.2em]">ADVANCED DRONE SPOOFING DETECTION</div>
+        <h1 className="text-xl font-semibold tracking-wide text-slate-50 leading-tight">AEGIS GPS</h1>
+        <div className="text-[10px] text-cyan-300/80 tracking-[0.16em]">ADVANCED DRONE SPOOFING DETECTION</div>
       </div>
     </div>
     <div className="grid grid-cols-3 gap-2 mt-1">
       <div className="flex flex-col text-[11px]">
-        <span className="text-gray-500 text-[10px]">SYSTEM STATUS</span>
-        <span className="text-green-400 font-bold flex items-center gap-1">
+        <span className="text-slate-500 text-[10px]">SYSTEM STATUS</span>
+        <span className="text-emerald-300 font-semibold flex items-center gap-1">
           <Activity size={10}/> SECURE
         </span>
       </div>
       <div className="flex flex-col text-[11px]">
-        <span className="text-gray-500 text-[10px]">MEMORY ALLOC</span>
-        <span className="text-green-400 font-bold">{dataCount} PTS</span>
+        <span className="text-slate-500 text-[10px]">MEMORY ALLOC</span>
+        <span className="text-cyan-300 font-semibold">{dataCount} PTS</span>
       </div>
       {/* NOWE: wskaźnik połączenia SSE */}
       <div className="flex flex-col text-[11px]">
-        <span className="text-gray-500 text-[10px]">DATA FEED</span>
-        <span className={`font-bold flex items-center gap-1 ${isConnected ? 'text-green-400' : 'text-red-500'}`}>
+        <span className="text-slate-500 text-[10px]">DATA FEED</span>
+        <span className={`font-semibold flex items-center gap-1 ${isConnected ? 'text-emerald-300' : 'text-rose-400'}`}>
           {isConnected ? <Wifi size={10}/> : <WifiOff size={10}/>}
           {isConnected ? 'LIVE' : 'NO FEED'}
         </span>
@@ -64,62 +69,68 @@ const NavbarSection = ({ dataCount, isConnected }) => (
 // ==========================================
 // SEKCJA 2: GLOBUS, ACTIVE TARGETS, UNLOCK
 // ==========================================
-const GlobeBackground = ({ globeRef, globeData, alerts, focusedDroneId, isAutoRotate }) => (
-  <div className="absolute inset-0 z-0 opacity-80">
-    <Globe
-      ref={globeRef}
-      globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
-      backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
-      backgroundColor="rgba(0,0,0,0)"
-      atmosphereColor="#10b981"
-      atmosphereAltitude={0.15}
-      pathsData={globeData.paths}
-      pathPoints="points"
-      pathColor="color"
-      pathResolution={30}
-      pathWidth={1.5}
-      ringsData={alerts}
-      ringColor={() => t => `rgba(255, 0, 0, ${1 - t})`}
-      ringMaxRadius={2.5}
-      ringPropagationSpeed={1.5}
-      ringRepeatPeriod={0}
-      htmlElementsData={globeData.htmlElements}
-      htmlLat="lat"
-      htmlLng="lng"
-      htmlElement={(d) => {
-        const el = document.createElement('div');
-        const isDanger = d.probability > 0.5;
-        const isFocused = d.mId === focusedDroneId;
-        const pulseClass = 'animate-[pulse_1s_ease-in-out_infinite]';
-        const outerPing = isDanger ? `<div class="absolute w-8 h-8 rounded-full border border-red-500/80 animate-ping"></div>` : '';
-        const zIndexVal = isFocused ? 999 : (isDanger ? 10 : 1);
+const GlobeBackground = ({ globeRef, globeData, alerts, focusedDroneId, isAutoRotate }) => {
+  useEffect(() => {
+    if (globeRef.current) {
+      globeRef.current.controls().autoRotate = isAutoRotate;
+      globeRef.current.controls().autoRotateSpeed = 0.5;
+    }
+  }, [isAutoRotate, globeRef]);
 
-        el.innerHTML = `
-          <div style="position: relative; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: ${zIndexVal};">
-            ${outerPing}
-            <div class="${pulseClass}" style="position: relative; width: ${isFocused ? '16px' : '12px'}; height: ${isFocused ? '16px' : '12px'}; border-radius: 50%; background-color: ${d.color}; box-shadow: 0 0 15px ${d.color}; border: ${isFocused ? '2px solid white' : '1px solid white'};"></div>
-            <div class="absolute -top-6 text-[10px] whitespace-nowrap px-1 border font-bold ${isFocused ? 'bg-white text-black border-white z-50' : 'bg-black/80 border-gray-700'}" style="${!isFocused ? `color: ${d.color};` : ''}">
-              ID:${d.mId} [${(d.probability * 100).toFixed(0)}%]
+  return (
+    <div className="absolute inset-0 z-0 opacity-80 cursor-pointer">
+      <Globe
+        ref={globeRef}
+        globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
+        backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
+        backgroundColor="rgba(0,0,0,0)"
+        atmosphereColor="#10b981"
+        atmosphereAltitude={0.15}
+        pathsData={globeData.paths}
+        pathsTransitionDuration={0}
+        pathPoints="points"
+        pathColor="color"
+        pathResolution={30}
+        pathWidth={1.5}
+        ringsData={alerts}
+        ringColor={() => t => `rgba(239, 68, 68, ${1 - t})`}
+        ringMaxRadius={15}
+        ringPropagationSpeed={2}
+        ringRepeatPeriod={0}
+        htmlElementsData={globeData.htmlElements}
+        htmlLat="lat"
+        htmlLng="lng"
+        htmlElement={(d) => {
+          const el = document.createElement('div');
+          const isDanger = d.probability > 0.5;
+          const isFocused = d.mId === focusedDroneId;
+          const pulseClass = 'animate-pulse';
+          const zIndexVal = isFocused ? 999 : (isDanger ? 10 : 1);
+
+          el.innerHTML = `
+            <div style="position: relative; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: ${zIndexVal};">
+              <div class="${pulseClass}" style="position: relative; width: ${isFocused ? '20px' : '14px'}; height: ${isFocused ? '20px' : '14px'}; border-radius: 50%; background-color: ${d.color}; box-shadow: 0 0 20px 5px ${d.color}; border: ${isFocused ? '3px solid white' : '1px solid white'};"></div>
+              <div class="absolute -top-8 text-[11px] whitespace-nowrap px-1.5 py-0.5 border font-bold ${isFocused ? 'bg-white text-black border-white z-50' : 'bg-black/90 border-gray-600'}" style="${!isFocused ? `color: ${d.color};` : ''}">
+                ID:${d.mId} [${(d.probability * 100).toFixed(0)}%]
+              </div>
             </div>
-          </div>
-        `;
-        return el;
-      }}
-      autoRotate={isAutoRotate}
-      autoRotateSpeed={0.5}
-    />
-  </div>
-);
+          `;
+          return el;
+        }}
+      />
+    </div>
+  );
+};
 
 const ActiveTargetsList = ({ activeDrones, focusedDroneId, handleLockOnTarget }) => (
-  <div className="pointer-events-auto bg-black/70 border border-green-500/30 backdrop-blur-md p-3 rounded-sm shadow-[0_0_15px_rgba(16,185,129,0.12)] flex flex-col gap-2 w-[300px] max-h-[350px] overflow-hidden">
-    <div className="flex justify-between items-center border-b border-gray-800 pb-1">
-      <h3 className="text-[11px] font-bold text-gray-400 tracking-widest">ACTIVE TARGETS / FLEET</h3>
-      <span className="text-[10px] bg-gray-800 px-1.5 rounded text-gray-400">{activeDrones.length} ONLINE</span>
+  <div className={`${panelClass} p-3 flex flex-col gap-2 w-[320px] max-h-[250px] overflow-hidden`}>
+    <div className="flex justify-between items-center border-b border-white/10 pb-2">
+      <h3 className="text-[11px] font-semibold text-slate-300 tracking-wide">ACTIVE TARGETS / FLEET</h3>
+      <span className="text-[10px] bg-cyan-400/10 px-2 py-0.5 rounded text-cyan-200 border border-cyan-400/10">{activeDrones.length} ONLINE</span>
     </div>
     <div className="flex flex-col gap-1 overflow-y-auto custom-scrollbar">
       {activeDrones.length === 0 ? (
-        <span className="text-[11px] text-gray-400 tracking-widest uppercase py-2 text-center">Awaiting Connection...</span>
+        <span className="text-[11px] text-slate-400 tracking-wide uppercase py-2 text-center">Awaiting Connection...</span>
       ) : (
         activeDrones.map(drone => {
           const isDanger = drone.probability > 0.5;
@@ -127,13 +138,13 @@ const ActiveTargetsList = ({ activeDrones, focusedDroneId, handleLockOnTarget })
             <div 
               key={drone.mId}
               onClick={() => handleLockOnTarget(drone.mId)}
-              className={`flex justify-between items-center p-1.5 cursor-crosshair border-l-2 transition-all ${focusedDroneId === drone.mId ? 'bg-gray-800/80 border-white' : 'hover:bg-gray-900/50'} ${isDanger ? 'border-red-500' : 'border-green-500'}`}
+              className={`flex justify-between items-center p-2 cursor-crosshair border-l-2 rounded-md transition-all ${focusedDroneId === drone.mId ? 'bg-white/10 border-white' : 'hover:bg-white/[0.06]'} ${isDanger ? 'border-rose-400' : 'border-emerald-300'}`}
             >
               <div className="flex flex-col">
-                <span className="text-[11px] font-bold text-gray-300">ID: {drone.mId}</span>
-                <span className="text-[10px] text-gray-500">LAT: {drone.lat?.toFixed(3)} | LNG: {drone.lng?.toFixed(3)}</span>
+                <span className="text-[11px] font-semibold text-slate-200">ID: {drone.mId}</span>
+                <span className="text-[10px] text-slate-500">LAT: {drone.lat?.toFixed(3)} | LNG: {drone.lng?.toFixed(3)}</span>
               </div>
-              <div className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isDanger ? 'bg-red-900/30 text-red-500 animate-[pulse_1s_ease-in-out_infinite]' : 'bg-green-900/30 text-green-500'}`}>
+              <div className={`text-[10px] font-semibold px-2 py-1 rounded-md ${isDanger ? 'bg-rose-500/15 text-rose-300 animate-[pulse_1s_ease-in-out]' : 'bg-emerald-400/10 text-emerald-300'}`}>
                 {(drone.probability * 100).toFixed(0)}% SGN
               </div>
             </div>
@@ -145,16 +156,16 @@ const ActiveTargetsList = ({ activeDrones, focusedDroneId, handleLockOnTarget })
 );
 
 const GlobeControls = ({ isAutoRotate, setIsAutoRotate, focusedDroneId, setFocusedDroneId }) => (
-  <div className="pointer-events-auto flex flex-col gap-2 bg-black/60 p-2 border border-green-900/40 rounded-sm backdrop-blur-sm">
+  <div className={`${panelClass} flex flex-col gap-2 p-2`}>
     <button 
       onClick={() => setIsAutoRotate(!isAutoRotate)}
-      className={`p-2 rounded-sm border transition-all flex items-center gap-2 text-xs ${isAutoRotate ? 'bg-green-900/40 border-green-500 text-green-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : 'bg-gray-900/50 border-gray-700 text-gray-500 hover:border-gray-600'}`}
+      className={`p-2 rounded-md border transition-all flex items-center gap-2 text-xs ${isAutoRotate ? 'bg-cyan-400/10 border-cyan-300/30 text-cyan-200 shadow-[0_0_18px_rgba(34,211,238,0.16)]' : 'bg-white/[0.03] border-white/10 text-slate-400 hover:border-white/20'}`}
     >
       <RefreshCw size={14} className={isAutoRotate ? "animate-spin-slow" : ""} /> [ROTOR]
     </button>
     <button 
       onClick={() => setFocusedDroneId(null)}
-      className={`p-2 rounded-sm border transition-all flex items-center gap-2 text-xs ${focusedDroneId ? 'bg-green-900/40 border-green-500 text-green-400' : 'bg-gray-900/50 border-gray-700 text-gray-500 hover:border-gray-600'}`}
+      className={`p-2 rounded-md border transition-all flex items-center gap-2 text-xs ${focusedDroneId ? 'bg-cyan-400/10 border-cyan-300/30 text-cyan-200' : 'bg-white/[0.03] border-white/10 text-slate-400 hover:border-white/20'}`}
     >
       <Crosshair size={14} /> [UNLOCK]
     </button>
@@ -165,43 +176,43 @@ const GlobeControls = ({ isAutoRotate, setIsAutoRotate, focusedDroneId, setFocus
 // SEKCJA 3: STATYSTYKI (ZOPTYMALIZOWANA)
 // ==========================================
 const StatsSection = ({ alerts, chartData, handleLockOnTarget }) => (
-  <div className="w-full flex justify-center pointer-events-none pb-6 relative z-20">
-    <div className="w-full max-w-[1400px] flex flex-col gap-3 pointer-events-auto h-[320px]">
+  <div className="w-full flex justify-center pointer-events-none pb-4 relative z-20">
+    <div className="w-full max-w-[1400px] flex flex-col gap-3 pointer-events-auto h-[270px]">
       
       {/* HORIZONTAL ALERTS BAR */}
-      <div className="w-full bg-black/80 border border-green-500/30 backdrop-blur-md p-3 flex flex-col shadow-[0_-10px_30px_rgba(0,0,0,0.8)] h-[90px] shrink-0">
-        <div className="flex justify-between items-center  px-100px">
-          <h3 className="text-xs font-bold text-red-500 tracking-[0.2em] flex items-center gap-2 p-3">
+      <div className="w-full bg-slate-950/75 border border-white/10 backdrop-blur-xl rounded-lg flex flex-col shadow-[0_-18px_60px_rgba(2,8,23,0.5)] h-[88px] shrink-0 overflow-hidden">
+        <div className="flex justify-between items-center px-4 py-2 border-b border-white/10">
+          <h3 className="text-xs font-semibold text-rose-300 tracking-wide flex items-center gap-2">
             <ShieldAlert size={14} /> RECENT COMPROMISED SIGNATURES
           </h3>
-          <div className="text-[11px] w-240px text-gray-400 font-bold bg-gray-900/50 px-2 py-0.5 rounded border border-gray-800">
-            LATEST THREATS: <span className="text-red-500">{alerts.length}/5</span>
+          <div className="text-[11px] text-slate-300 font-semibold bg-white/[0.04] px-2 py-0.5 rounded-md border border-white/10">
+            LATEST THREATS: <span className="text-rose-300">{alerts.length}/5</span>
           </div>
         </div>
         
-        <div className="flex-1 w-full px-2">
+        <div className="flex-1 w-full p-2 overflow-hidden">
           {alerts.length === 0 ? (
-            <div className="flex justify-center items-center w-full h-full gap-2 border border-dashed border-green-900/30 bg-green-900/5 rounded-sm uppercase tracking-widest text-[11px] text-green-600">
+            <div className="flex justify-center items-center w-full h-full gap-2 border border-dashed border-cyan-400/15 bg-cyan-400/5 rounded-md uppercase tracking-wide text-[11px] text-cyan-300/75">
               <ShieldCheck size={16} /> Awaiting Threat Signatures...
             </div>
           ) : (
-            <div className={`grid gap-3 h-full ${alerts.length < 5 ? 'grid-cols-' + alerts.length : 'grid-cols-5'}`}>
+            <div className="flex gap-2 h-full overflow-hidden">
               {alerts.map(alert => (
                 <div 
                   key={alert.id}
                   onClick={() => handleLockOnTarget(alert.mId)}
-                  className="h-full bg-[#0a0a0a] border border-red-500/30 p-2 rounded-sm flex flex-col justify-between hover:bg-[#111111] hover:border-red-500/60 transition-all relative group cursor-crosshair box-border"
+                  className="w-[240px] shrink-0 h-full bg-rose-950/20 border border-rose-400/20 p-2 rounded-md flex flex-col justify-between hover:bg-rose-950/35 hover:border-rose-300/40 transition-all relative group cursor-crosshair box-border overflow-hidden"
                 >
-                  <div className="absolute top-0 left-0 w-full h-[1px] bg-red-500/80 animate-[pulse_1s_ease-in-out_infinite]"></div>
+                  <div className="absolute top-0 left-0 w-full h-[2px] bg-rose-400/80 animate-[pulse_1s_ease-in-out]"></div>
                   <div className="flex justify-between items-start">
                     <div className="flex flex-col min-w-0">
-                      <div className="text-[10px] text-gray-400 tracking-widest truncate">ID: {alert.mId}</div>
-                      <div className="text-[11px] font-bold text-red-500 flex items-center gap-1 mt-0.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0"></span> 
+                      <div className="text-[10px] text-slate-400 tracking-wide truncate">ID: {alert.mId}</div>
+                      <div className="text-[11px] font-semibold text-rose-300 flex items-center gap-1 mt-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping shrink-0"></span> 
                         <span className="truncate">SPOOF {(alert.probability * 100).toFixed(0)}%</span>
                       </div>
                     </div>
-                    <div className="text-[9px] text-gray-400 bg-[#161616] px-1 py-0.5 border border-gray-800 font-mono shrink-0 ml-1">
+                    <div className="text-[9px] text-slate-400 bg-slate-900/80 px-1 py-0.5 border border-white/10 font-mono shrink-0 ml-1 rounded">
                       {alert.timestamp}
                     </div>
                   </div>
@@ -213,29 +224,36 @@ const StatsSection = ({ alerts, chartData, handleLockOnTarget }) => (
       </div>
 
       {/* CRITICAL STATS ROW — CSS Grid zamiast % szerokości */}
-      <div className="grid grid-cols-10 gap-3 flex-1 w-full bg-black/80 border border-green-500/30 backdrop-blur-md p-3">
+      <div className="grid h-[170px] grid-cols-10 gap-3 flex-1 w-full bg-slate-950/75 border border-white/10 backdrop-blur-xl rounded-lg p-3 shadow-[0_20px_70px_rgba(2,8,23,0.45)]">
         
         {/* WYKRES 1: THREAT PROBABILITY — col-span-3 */}
-        <div className="col-span-3 bg-gray-900/40 p-2 rounded-sm border border-gray-800/50 flex flex-col min-h-0">
-          <h3 className="text-[11px] text-gray-300 font-bold tracking-wider mb-1 flex justify-between items-center shrink-0">
+        <div className={`col-span-3 ${chartPanelClass}`}>
+          <h3 className={chartTitleClass}>
             <span>THREAT PROBABILITY</span>
-            <span className="text-[10px] text-red-400 bg-red-900/20 px-1.5 py-0.5 rounded border border-red-900/30">SPOOF LEVEL</span>
+            <span className="text-[10px] text-rose-300 bg-rose-500/10 px-2 py-0.5 rounded-md border border-rose-400/10">SPOOF LEVEL</span>
           </h3>
           <div className="flex-1 w-full min-h-0">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+              <LineChart data={chartData} margin={{ top: 8, right: 8, left: -20, bottom: 4 }}>
+                <defs>
+                  <linearGradient id="probabilityStroke" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#fb7185" />
+                    <stop offset="100%" stopColor="#f43f5e" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="rgba(148,163,184,0.12)" vertical={false} />
                 <XAxis dataKey="timestamp" hide />
-                <YAxis stroke="#4b5563" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} domain={[0, 1]} />
+                <YAxis tick={tickStyle} axisLine={false} tickLine={false} domain={[0, 1]} />
                 <RechartsTooltip contentStyle={tooltipStyle} labelStyle={labelStyle} />
-                <Legend iconType="square" wrapperStyle={{ fontSize: '10px', paddingTop: '4px' }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '6px', color: '#cbd5e1' }} />
                 <Line 
                   name="Spoof Prob" 
                   type="monotone" 
                   dataKey="probability" 
-                  stroke="#EF4444" 
-                  strokeWidth={2} 
-                  dot={false} 
+                  stroke="url(#probabilityStroke)" 
+                  strokeWidth={3} 
+                  dot={false}
+                  activeDot={{ r: 5, fill: '#fb7185', stroke: '#fff', strokeWidth: 2 }}
                   isAnimationActive={false} 
                 />
               </LineChart>
@@ -244,26 +262,27 @@ const StatsSection = ({ alerts, chartData, handleLockOnTarget }) => (
         </div>
 
         {/* WYKRES 2: ALTITUDE TRACKING — col-span-3 */}
-        <div className="col-span-3 bg-gray-900/40 p-2 rounded-sm border border-gray-800/50 flex flex-col min-h-0">
-          <h3 className="text-[11px] text-gray-300 font-bold tracking-wider mb-1 shrink-0">
+        <div className={`col-span-3 ${chartPanelClass}`}>
+          <h3 className={chartTitleClass}>
             ALTITUDE TRACKING
           </h3>
           <div className="flex-1 w-full min-h-0">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+              <LineChart data={chartData} margin={{ top: 8, right: 8, left: -10, bottom: 4 }}>
+                <CartesianGrid stroke="rgba(148,163,184,0.12)" vertical={false} />
                 <XAxis dataKey="timestamp" hide />
-                <YAxis stroke="#4b5563" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} domain={['auto', 'auto']} />
+                <YAxis tick={tickStyle} axisLine={false} tickLine={false} domain={['auto', 'auto']} />
                 <RechartsTooltip contentStyle={tooltipStyle} labelStyle={labelStyle} />
-                <Legend iconType="plainline" wrapperStyle={{ fontSize: '10px', paddingTop: '4px' }} />
+                <Legend iconType="plainline" wrapperStyle={{ fontSize: '11px', paddingTop: '6px', color: '#cbd5e1' }} />
                 {/* monotone dla płynnego lotu drona */}
                 <Line 
                   name="Real Alt (GPS)" 
                   type="monotone" 
                   dataKey="alt" 
-                  stroke="#3B82F6" 
-                  strokeWidth={1.5} 
+                  stroke="#38bdf8" 
+                  strokeWidth={2.5} 
                   dot={false} 
+                  activeDot={{ r: 5, fill: '#38bdf8', stroke: '#fff', strokeWidth: 2 }}
                   isAnimationActive={false} 
                 />
                 {/* step + dashed dla sztywnego setpointu barometru */}
@@ -271,10 +290,11 @@ const StatsSection = ({ alerts, chartData, handleLockOnTarget }) => (
                   name="Baro Setpoint" 
                   type="step" 
                   dataKey="altSetpoint" 
-                  stroke="#10B981" 
-                  strokeWidth={1.5} 
-                  strokeDasharray="4 3" 
+                  stroke="#34d399" 
+                  strokeWidth={2.5} 
+                  strokeDasharray="6 5" 
                   dot={false} 
+                  activeDot={{ r: 5, fill: '#34d399', stroke: '#fff', strokeWidth: 2 }}
                   isAnimationActive={false} 
                 />
               </LineChart>
@@ -283,47 +303,53 @@ const StatsSection = ({ alerts, chartData, handleLockOnTarget }) => (
         </div>
 
         {/* WYKRES 3: CONSTELLATION HEALTH — col-span-4 */}
-        <div className="col-span-4 bg-gray-900/40 p-2 rounded-sm border border-gray-800/50 flex flex-col min-h-0">
-          <h3 className="text-[11px] text-gray-300 font-bold tracking-wider mb-1 shrink-0">
+        <div className={`col-span-4 ${chartPanelClass}`}>
+          <h3 className={chartTitleClass}>
             CONSTELLATION HEALTH
           </h3>
           <div className="flex-1 w-full min-h-0 relative">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
+              <ComposedChart data={chartData} margin={{ top: 8, right: 4, left: -20, bottom: 4 }}>
+                <defs>
+                  <linearGradient id="satGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#22d3ee" stopOpacity={0.95} />
+                    <stop offset="100%" stopColor="#0f766e" stopOpacity={0.5} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid stroke="rgba(148,163,184,0.12)" vertical={false} />
                 <XAxis dataKey="timestamp" hide />
                 {/* domain z marginesem, żeby małe wahania były widoczne */}
-                <YAxis yAxisId="left" stroke="#4b5563" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="left" tick={tickStyle} axisLine={false} tickLine={false} />
                 <YAxis 
                   yAxisId="right" 
                   orientation="right" 
-                  stroke="#4b5563" 
-                  tick={{ fontSize: 10, fill: '#ef4444' }} 
+                  tick={{ ...tickStyle, fill: '#fb7185' }} 
                   axisLine={false} 
                   tickLine={false} 
                   domain={['dataMin - 0.5', 'dataMax + 0.5']}
                 />
                 <RechartsTooltip contentStyle={tooltipStyle} labelStyle={labelStyle} />
-                <Legend wrapperStyle={{ fontSize: '10px', paddingTop: '4px' }} />
+                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '6px', color: '#cbd5e1' }} />
                 <Bar 
                   name="Sat Count" 
                   yAxisId="left" 
                   dataKey="satCount" 
-                  fill="#059669" 
+                  fill="url(#satGradient)" 
                   isAnimationActive={false} 
-                  radius={[2, 2, 0, 0]} 
+                  radius={[4, 4, 0, 0]} 
                 />
                 <Line 
                   name="HDOP Noise" 
                   yAxisId="right" 
                   type="monotone" 
                   dataKey="gpsHdop" 
-                  stroke="#EF4444" 
-                  strokeWidth={2} 
+                  stroke="#fb7185" 
+                  strokeWidth={2.5} 
                   dot={false} 
+                  activeDot={{ r: 5, fill: '#fb7185', stroke: '#fff', strokeWidth: 2 }}
                   isAnimationActive={false} 
                 />
-              </BarChart>
+              </ComposedChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -448,7 +474,7 @@ const SOCDashboard = () => {
 
       if (pts.length > 1) {
         paths.push({
-          id: latest.mId,
+          id: `${latest.mId}-${pts.length}`,
           points: pts.map(p => [p.lat, p.lng, p.alt / 10000]),
           color: getThreatColor(latest.probability)
         });
@@ -488,7 +514,7 @@ const SOCDashboard = () => {
   const chartData = focusedStream.slice(-30);
 
   return (
-    <div className="relative w-screen h-screen bg-[#050505] text-green-500 font-mono overflow-hidden selection:bg-green-900">
+    <div className="relative w-screen h-screen bg-[#020617] text-slate-200 overflow-hidden selection:bg-cyan-900/70">
       
       {/* TŁO GLOBUSA */}
       <GlobeBackground 
