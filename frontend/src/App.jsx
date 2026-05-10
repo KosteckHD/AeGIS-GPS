@@ -4,7 +4,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
   ResponsiveContainer, ComposedChart, Bar, Legend
 } from 'recharts';
-import { AlertTriangle, Clock3, Cpu, Crosshair, Gauge, GitBranch, Radio, RefreshCw, Activity, ShieldAlert, ShieldCheck, Wifi, WifiOff, Zap } from 'lucide-react';
+import { AlertTriangle, ChevronDown, ChevronUp, Clock3, Cpu, Crosshair, Gauge, GitBranch, Radio, RefreshCw, Activity, ShieldAlert, ShieldCheck, Wifi, WifiOff, Zap } from 'lucide-react';
 import FeatureGraphPage from './components/FeatureGraphPage';
 
 // --- NARZĘDZIA POMOCNICZE ---
@@ -34,19 +34,31 @@ const tickStyle = { fontSize: 11, fill: '#a7f3d0', fontWeight: 600 };
 const lineAnimation = { isAnimationActive: true, animationDuration: 450, animationEasing: 'ease-out' };
 const API_BASE_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:8000`;
 
+const CollapseButton = ({ collapsed, onToggle, label = 'Toggle panel' }) => (
+  <button
+    type="button"
+    aria-label={label}
+    onClick={onToggle}
+    className="shrink-0 rounded-sm border border-emerald-300/24 bg-white/[0.045] p-1 text-emerald-100 hover:bg-emerald-300/14 hover:border-emerald-200/55 transition-all"
+  >
+    {collapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+  </button>
+);
+
 // ==========================================
 // SEKCJA 1: NAVBAR
 // ==========================================
-const NavbarSection = ({ dataCount, isConnected, runtimeStats, onShowFeatureGraph }) => (
-  <div className={`${panelClass} p-4 flex flex-col gap-3 w-[390px] max-w-[calc(100vw-32px)]`}>
-    <div className="flex items-center gap-3 border-b border-emerald-400/20 pb-3">
+const NavbarSection = ({ dataCount, isConnected, runtimeStats, collapsed, onToggle, onShowFeatureGraph }) => (
+  <div className={`${panelClass} p-4 flex flex-col gap-3 w-[390px] max-[1100px]:w-[300px] max-w-[calc(100vw-32px)]`}>
+    <div className="flex items-center justify-between gap-3 border-b border-emerald-400/20 pb-3">
       <ShieldCheck size={24} className="text-emerald-300 drop-shadow-[0_0_10px_rgba(52,211,153,0.7)]" />
-      <div>
-        <h1 className="glitch-title text-xl font-black tracking-[0.18em] text-emerald-100 leading-tight">AEGIS GPS</h1>
-        <div className="text-[10px] text-emerald-300/80 tracking-[0.16em] leading-snug">ADVANCED DRONE SPOOFING DETECTION</div>
+      <div className="min-w-0 flex-1">
+        <h1 className="glitch-title text-xl max-[1100px]:text-lg font-black tracking-[0.18em] text-emerald-100 leading-tight truncate">AEGIS GPS</h1>
+        <div className="text-[10px] text-emerald-300/80 tracking-[0.16em] leading-snug truncate">ADVANCED DRONE SPOOFING DETECTION</div>
       </div>
+      <CollapseButton collapsed={collapsed} onToggle={onToggle} label="Toggle system panel" />
     </div>
-    <div className="grid grid-cols-3 gap-2 mt-1">
+    <div className={`grid grid-cols-3 gap-2 mt-1 ${collapsed ? 'hidden' : ''}`}>
       <div className="flex flex-col text-[11px]">
         <span className="text-slate-400 text-[10px] tracking-[0.12em]">SYSTEM STATUS</span>
         <span className="text-emerald-300 font-semibold flex items-center gap-1">
@@ -66,7 +78,7 @@ const NavbarSection = ({ dataCount, isConnected, runtimeStats, onShowFeatureGrap
         </span>
       </div>
     </div>
-    <div className="grid grid-cols-3 gap-2 border-t border-emerald-300/16 pt-2">
+    <div className={`grid grid-cols-3 max-[1100px]:grid-cols-1 gap-2 border-t border-emerald-300/16 pt-2 ${collapsed ? 'hidden' : ''}`}>
       <div className="bg-white/[0.045] border border-emerald-300/16 p-2 rounded-sm min-w-0">
         <div className="flex items-center gap-1 text-[9px] text-slate-400 tracking-[0.12em]"><Cpu size={10}/> MODEL</div>
         <div className="text-[11px] text-emerald-100 font-semibold truncate">{runtimeStats.model || 'awaiting'}</div>
@@ -82,7 +94,7 @@ const NavbarSection = ({ dataCount, isConnected, runtimeStats, onShowFeatureGrap
     </div>
     <button
       onClick={onShowFeatureGraph}
-      className="flex items-center justify-center gap-2 text-[11px] font-semibold tracking-[0.12em] uppercase border border-emerald-300/28 bg-emerald-300/8 text-emerald-100 px-3 py-2 rounded-sm hover:bg-emerald-300/14 hover:border-emerald-200/55 transition-all"
+      className={`flex items-center justify-center gap-2 text-[11px] font-semibold tracking-[0.12em] uppercase border border-emerald-300/28 bg-emerald-300/8 text-emerald-100 px-3 py-2 rounded-sm hover:bg-emerald-300/14 hover:border-emerald-200/55 transition-all ${collapsed ? 'hidden' : ''}`}
     >
       <GitBranch size={14} /> Feature Graph
     </button>
@@ -148,13 +160,16 @@ const GlobeBackground = ({ globeRef, globeData, alerts, focusedDroneId, isAutoRo
   );
 };
 
-const ActiveTargetsList = ({ activeDrones, focusedDroneId, handleLockOnTarget }) => (
-  <div className={`${panelClass} p-3 flex flex-col gap-2 w-[390px] max-w-[calc(100vw-32px)] max-h-[250px] overflow-hidden`}>
+const ActiveTargetsList = ({ activeDrones, focusedDroneId, handleLockOnTarget, collapsed, onToggle }) => (
+  <div className={`${panelClass} p-3 flex flex-col gap-2 w-[390px] max-[1100px]:w-[300px] max-w-[calc(100vw-32px)] ${collapsed ? 'max-h-[52px]' : 'max-h-[250px]'} overflow-hidden`}>
     <div className="flex justify-between items-center border-b border-emerald-400/20 pb-2">
       <h3 className="text-[11px] font-semibold text-slate-100 tracking-[0.14em]">ACTIVE TARGETS / FLEET</h3>
-      <span className="text-[10px] bg-emerald-300/14 px-2 py-0.5 rounded-sm text-emerald-100 border border-emerald-300/35">{activeDrones.length} ONLINE</span>
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] bg-emerald-300/14 px-2 py-0.5 rounded-sm text-emerald-100 border border-emerald-300/35">{activeDrones.length} ONLINE</span>
+        <CollapseButton collapsed={collapsed} onToggle={onToggle} label="Toggle target list" />
+      </div>
     </div>
-    <div className="flex flex-col gap-1 overflow-y-auto custom-scrollbar">
+    <div className={`flex flex-col gap-1 overflow-y-auto custom-scrollbar ${collapsed ? 'hidden' : ''}`}>
       {activeDrones.length === 0 ? (
         <span className="text-[11px] text-slate-300 tracking-[0.16em] uppercase py-2 text-center">Awaiting Connection...</span>
       ) : (
@@ -225,14 +240,17 @@ const RiskBar = ({ label, value, detail, danger }) => (
   </div>
 );
 
-const TargetIntelPanel = ({ target }) => {
+const TargetIntelPanel = ({ target, collapsed, onToggle }) => {
   if (!target) {
     return (
-      <div className={`${panelClass} w-[320px] p-3`}>
-        <div className="text-[11px] font-semibold text-slate-100 tracking-[0.14em] border-b border-emerald-400/20 pb-2">
-          TARGET INTEL
+      <div className={`${panelClass} w-[320px] max-[1100px]:w-[300px] p-3`}>
+        <div className="flex items-center justify-between border-b border-emerald-400/20 pb-2">
+          <div className="text-[11px] font-semibold text-slate-100 tracking-[0.14em]">
+            TARGET INTEL
+          </div>
+          <CollapseButton collapsed={collapsed} onToggle={onToggle} label="Toggle target intel" />
         </div>
-        <div className="mt-3 text-[11px] text-slate-300 border border-dashed border-emerald-300/24 bg-white/[0.035] p-3 rounded-sm">
+        <div className={`mt-3 text-[11px] text-slate-300 border border-dashed border-emerald-300/24 bg-white/[0.035] p-3 rounded-sm ${collapsed ? 'hidden' : ''}`}>
           Click a target on the globe or fleet list to inspect current GNSS state.
         </div>
       </div>
@@ -262,14 +280,18 @@ const TargetIntelPanel = ({ target }) => {
   ];
 
   return (
-    <div className={`${panelClass} w-[320px] p-3`}>
+    <div className={`${panelClass} w-[320px] max-[1100px]:w-[300px] p-3`}>
       <div className="flex items-center justify-between border-b border-emerald-400/20 pb-2">
         <h3 className="text-[11px] font-semibold text-slate-100 tracking-[0.14em]">TARGET INTEL</h3>
-        <span className={`text-[10px] px-2 py-0.5 rounded-sm border font-bold ${isSpoofed ? 'text-red-100 bg-red-500/18 border-red-300/35' : 'text-emerald-100 bg-emerald-300/12 border-emerald-300/30'}`}>
-          {isSpoofed ? 'SPOOF SUSPECT' : 'CLEAN'}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`text-[10px] px-2 py-0.5 rounded-sm border font-bold ${isSpoofed ? 'text-red-100 bg-red-500/18 border-red-300/35' : 'text-emerald-100 bg-emerald-300/12 border-emerald-300/30'}`}>
+            {isSpoofed ? 'SPOOF SUSPECT' : 'CLEAN'}
+          </span>
+          <CollapseButton collapsed={collapsed} onToggle={onToggle} label="Toggle target intel" />
+        </div>
       </div>
 
+      <div className={collapsed ? 'hidden' : ''}>
       <div className="mt-3 flex items-end justify-between">
         <div>
           <div className="text-[10px] text-slate-400 tracking-[0.14em]">MEASUREMENT ID</div>
@@ -328,11 +350,12 @@ const TargetIntelPanel = ({ target }) => {
           {target["Model Source"] || 'model probability from live API'} | {fmt(target["Inference Latency (ms)"], 2)} ms
         </div>
       </div>
+      </div>
     </div>
   );
 };
 
-const MissionSummaryPanel = ({ runtimeStats, activeDrones }) => {
+const MissionSummaryPanel = ({ runtimeStats, activeDrones, collapsed, onToggle }) => {
   const online = activeDrones.length;
   const compromised = activeDrones.filter(d => d.isCompromised || d["Model Prediction"] === 1).length;
   const avgProbability = activeDrones.length
@@ -343,14 +366,17 @@ const MissionSummaryPanel = ({ runtimeStats, activeDrones }) => {
     : 0;
 
   return (
-    <div className={`${panelClass} w-[320px] p-3`}>
+    <div className={`${panelClass} w-[320px] max-[1100px]:w-[300px] p-3`}>
       <div className="flex items-center justify-between border-b border-emerald-400/20 pb-2">
         <h3 className="text-[11px] font-semibold text-slate-100 tracking-[0.14em]">LIVE EVALUATION</h3>
-        <span className="text-[10px] text-emerald-100 bg-emerald-300/12 border border-emerald-300/28 px-2 py-0.5 rounded-sm">
-          {runtimeStats.mode || 'warming up'}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] text-emerald-100 bg-emerald-300/12 border border-emerald-300/28 px-2 py-0.5 rounded-sm max-w-[132px] truncate">
+            {runtimeStats.mode || 'warming up'}
+          </span>
+          <CollapseButton collapsed={collapsed} onToggle={onToggle} label="Toggle live evaluation" />
+        </div>
       </div>
-      <div className="grid grid-cols-2 gap-2 mt-3">
+      <div className={`grid grid-cols-2 gap-2 mt-3 ${collapsed ? 'hidden' : ''}`}>
         <div className="bg-white/[0.045] border border-emerald-300/16 p-2 rounded-sm">
           <div className="text-[9px] text-slate-400 tracking-[0.12em] uppercase flex items-center gap-1"><Radio size={10}/> Online</div>
           <div className="text-xl font-black text-emerald-50">{online}</div>
@@ -368,7 +394,7 @@ const MissionSummaryPanel = ({ runtimeStats, activeDrones }) => {
           <div className="text-xl font-black text-emerald-50">{(detectionRate * 100).toFixed(1)}%</div>
         </div>
       </div>
-      <div className="mt-3 space-y-2">
+      <div className={`mt-3 space-y-2 ${collapsed ? 'hidden' : ''}`}>
         <RiskBar label="Fleet Avg Probability" value={avgProbability} detail={`${(avgProbability * 100).toFixed(1)}%`} danger={avgProbability > 0.1} />
         <RiskBar label="Stream Progress" value={(runtimeStats.totalScored || 0) / 3600} detail={`${runtimeStats.totalScored || 0}/3600`} danger={false} />
       </div>
@@ -379,22 +405,25 @@ const MissionSummaryPanel = ({ runtimeStats, activeDrones }) => {
 // ==========================================
 // SEKCJA 3: STATYSTYKI (ZOPTYMALIZOWANA)
 // ==========================================
-const StatsSection = ({ alerts, chartData, handleLockOnTarget }) => (
-  <div className="w-full flex justify-center pointer-events-none pb-4 relative z-20">
-    <div className="w-full max-w-[1400px] flex flex-col gap-3 pointer-events-auto h-[282px]">
+const StatsSection = ({ alerts, chartData, handleLockOnTarget, collapsed, onToggle }) => (
+  <div className="w-full flex justify-center pointer-events-none pb-4 max-[1100px]:pb-3 relative z-20">
+    <div className={`w-full max-w-[1400px] flex flex-col gap-3 pointer-events-auto ${collapsed ? 'h-[45px]' : 'h-[282px] max-[1100px]:h-[238px] max-[900px]:h-[430px]'}`}>
       
       {/* HORIZONTAL ALERTS BAR */}
-      <div className="hud-panel w-full bg-black/76 border border-emerald-400/20 backdrop-blur-xl rounded-sm flex flex-col shadow-[0_-18px_60px_rgba(0,0,0,0.62)] h-[104px] shrink-0 overflow-hidden">
+      <div className={`hud-panel w-full bg-black/76 border border-emerald-400/20 backdrop-blur-xl rounded-sm flex flex-col shadow-[0_-18px_60px_rgba(0,0,0,0.62)] ${collapsed ? 'h-[45px]' : 'h-[104px] max-[1100px]:h-[86px]'} shrink-0 overflow-hidden`}>
         <div className="flex justify-between items-center px-4 py-1.5 border-b border-emerald-400/18 shrink-0">
           <h3 className="text-xs font-semibold text-red-100 tracking-[0.14em] flex items-center gap-2">
             <ShieldAlert size={14} /> RECENT COMPROMISED SIGNATURES
           </h3>
-          <div className="text-[11px] text-slate-200 font-semibold bg-white/[0.06] px-2 py-0.5 rounded-sm border border-emerald-300/24">
-            LATEST THREATS: <span className="text-red-100">{alerts.length}/5</span>
+          <div className="flex items-center gap-2">
+            <div className="text-[11px] text-slate-200 font-semibold bg-white/[0.06] px-2 py-0.5 rounded-sm border border-emerald-300/24">
+              LATEST THREATS: <span className="text-red-100">{alerts.length}/5</span>
+            </div>
+            <CollapseButton collapsed={collapsed} onToggle={onToggle} label="Toggle telemetry panels" />
           </div>
         </div>
         
-        <div className="flex-1 w-full min-h-0 p-2 overflow-hidden">
+        <div className={`flex-1 w-full min-h-0 p-2 overflow-hidden ${collapsed ? 'hidden' : ''}`}>
           {alerts.length === 0 ? (
             <div className="flex justify-center items-center w-full h-full gap-2 border border-dashed border-emerald-300/28 bg-white/[0.035] rounded-sm uppercase tracking-[0.14em] text-[11px] text-slate-200">
               <ShieldCheck size={16} /> Awaiting Threat Signatures...
@@ -431,10 +460,10 @@ const StatsSection = ({ alerts, chartData, handleLockOnTarget }) => (
       </div>
 
       {/* CRITICAL STATS ROW — CSS Grid zamiast % szerokości */}
-      <div className="hud-panel grid h-[165px] grid-cols-10 gap-3 flex-1 w-full bg-black/76 border border-emerald-400/20 backdrop-blur-xl rounded-sm p-3 shadow-[0_20px_70px_rgba(0,0,0,0.58)]">
+      <div className={`hud-panel grid h-[165px] max-[1100px]:h-[136px] max-[900px]:h-[330px] grid-cols-10 max-[900px]:grid-cols-1 gap-3 flex-1 w-full bg-black/76 border border-emerald-400/20 backdrop-blur-xl rounded-sm p-3 shadow-[0_20px_70px_rgba(0,0,0,0.58)] ${collapsed ? 'hidden' : ''}`}>
         
         {/* WYKRES 1: THREAT PROBABILITY — col-span-3 */}
-        <div className={`col-span-3 ${chartPanelClass}`}>
+        <div className={`col-span-3 max-[900px]:col-span-1 ${chartPanelClass}`}>
           <h3 className={chartTitleClass}>
             <span>THREAT PROBABILITY</span>
             <span className="text-[10px] text-red-100 bg-red-500/16 px-2 py-0.5 rounded-sm border border-red-300/24">SPOOF LEVEL</span>
@@ -469,7 +498,7 @@ const StatsSection = ({ alerts, chartData, handleLockOnTarget }) => (
         </div>
 
         {/* WYKRES 2: NAVIGATION DEVIATION — col-span-3 */}
-        <div className={`col-span-3 ${chartPanelClass}`}>
+        <div className={`col-span-3 max-[900px]:col-span-1 ${chartPanelClass}`}>
           <h3 className={chartTitleClass}>
             NAVIGATION DEVIATION
           </h3>
@@ -511,7 +540,7 @@ const StatsSection = ({ alerts, chartData, handleLockOnTarget }) => (
         </div>
 
         {/* WYKRES 3: CONSTELLATION HEALTH — col-span-4 */}
-        <div className={`col-span-4 ${chartPanelClass}`}>
+        <div className={`col-span-4 max-[900px]:col-span-1 ${chartPanelClass}`}>
           <h3 className={chartTitleClass}>
             CONSTELLATION HEALTH
           </h3>
@@ -588,6 +617,16 @@ const SOCDashboard = () => {
     threshold: null,
     totalScored: 0,
   });
+  const [collapsedPanels, setCollapsedPanels] = useState(() => {
+    const tabletPortrait = typeof window !== 'undefined' && window.innerWidth <= 900;
+    return {
+      system: tabletPortrait,
+      targets: false,
+      intel: false,
+      evaluation: true,
+      telemetry: tabletPortrait,
+    };
+  });
   // NOWE: stan połączenia SSE
   const [isConnected, setIsConnected] = useState(false);
   const globeEl = useRef();
@@ -595,6 +634,13 @@ const SOCDashboard = () => {
   const updateTimeoutRef = useRef(null);
   const compromisedIdsRef = useRef(new Set());
   const MAX_POINTS_PER_DRONE = 50;
+
+  const togglePanel = (panel) => {
+    setCollapsedPanels(prev => ({
+      ...prev,
+      [panel]: !prev[panel],
+    }));
+  };
 
   useEffect(() => {
     const eventSource = new EventSource(`${API_BASE_URL}/stream`);
@@ -775,37 +821,60 @@ const SOCDashboard = () => {
       />
 
       {/* WARSTWA INTERFEJSU */}
-      <div className="absolute inset-0 z-10 pointer-events-none px-4 pt-4 flex flex-col justify-between">
+      <div className="absolute inset-0 z-10 pointer-events-none px-4 max-[900px]:px-3 pt-4 max-[900px]:pt-3 flex flex-col justify-between">
         <div className="pointer-events-none absolute inset-0 z-[-1] cyber-grid opacity-70"></div>
         
         {/* GÓRNY HUD (Left & Right) */}
-        <div className="flex justify-between items-start w-full">
+        <div className="flex justify-between items-start gap-4 max-[900px]:gap-2 w-full">
           {/* Lewa strona */}
-          <div className="pointer-events-auto flex flex-col gap-3 max-h-[calc(100vh-330px)] overflow-y-auto custom-scrollbar pr-1">
+          <div className="pointer-events-auto flex flex-col gap-3 max-[1100px]:gap-2 max-h-[calc(100vh-330px)] max-[1100px]:max-h-[calc(100vh-276px)] max-[900px]:max-h-[calc(100vh-462px)] overflow-y-auto custom-scrollbar pr-1">
             <NavbarSection
               dataCount={dataStream.length}
               isConnected={isConnected}
               runtimeStats={runtimeStats}
+              collapsed={collapsedPanels.system}
+              onToggle={() => togglePanel('system')}
               onShowFeatureGraph={() => setCurrentView('feature-graph')}
             />
-            <ActiveTargetsList activeDrones={activeDrones} focusedDroneId={focusedDroneId} handleLockOnTarget={handleLockOnTarget} />
+            <ActiveTargetsList
+              activeDrones={activeDrones}
+              focusedDroneId={focusedDroneId}
+              handleLockOnTarget={handleLockOnTarget}
+              collapsed={collapsedPanels.targets}
+              onToggle={() => togglePanel('targets')}
+            />
           </div>
 
           {/* Prawa strona */}
-          <div className="pointer-events-auto flex flex-col gap-3 max-h-[calc(100vh-330px)] overflow-y-auto custom-scrollbar pr-1">
+          <div className="pointer-events-auto flex flex-col gap-3 max-[1100px]:gap-2 max-h-[calc(100vh-330px)] max-[1100px]:max-h-[calc(100vh-276px)] max-[900px]:max-h-[calc(100vh-462px)] overflow-y-auto custom-scrollbar pr-1">
             <GlobeControls 
               isAutoRotate={isAutoRotate} 
               setIsAutoRotate={setIsAutoRotate} 
               focusedDroneId={focusedDroneId} 
               setFocusedDroneId={setFocusedDroneId} 
             />
-            <TargetIntelPanel target={focusedTarget} />
-            <MissionSummaryPanel runtimeStats={runtimeStats} activeDrones={activeDrones} />
+            <TargetIntelPanel
+              target={focusedTarget}
+              collapsed={collapsedPanels.intel}
+              onToggle={() => togglePanel('intel')}
+            />
+            <MissionSummaryPanel
+              runtimeStats={runtimeStats}
+              activeDrones={activeDrones}
+              collapsed={collapsedPanels.evaluation}
+              onToggle={() => togglePanel('evaluation')}
+            />
           </div>
         </div>
 
         {/* DOLNY HUD — Statystyki */}
-        <StatsSection alerts={alerts} chartData={chartData} handleLockOnTarget={handleLockOnTarget} />
+        <StatsSection
+          alerts={alerts}
+          chartData={chartData}
+          handleLockOnTarget={handleLockOnTarget}
+          collapsed={collapsedPanels.telemetry}
+          onToggle={() => togglePanel('telemetry')}
+        />
 
       </div>
     </div>
