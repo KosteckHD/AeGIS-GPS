@@ -1,0 +1,83 @@
+[
+  {
+    "scenario": "C5_clean_no_multipath",
+    "record_id": "15572976",
+    "original_key": "Clear-Sky Signal C-5.bin",
+    "out": "C5_clean_no_multipath__Clear-Sky_Signal_C-5.bin",
+    "size_gb": 27.94,
+    "checksum": "md5:a03dedd79ac4208f6d60b4c916484dba",
+    "url": "https://zenodo.org/api/records/15572976/files/Clear-Sky%20Signal%20C-5.bin/content"
+  },
+  {
+    "scenario": "SS17_no_multipath_1_spoofer",
+    "record_id": "15623217",
+    "original_key": "SS-17 GPS Static No Multipath True Position – 1 Spoofer.bin",
+    "out": "SS17_no_multipath_1_spoofer__SS-17_GPS_Static_No_Multipath_True_Position_-_1_Spoofer.bin",
+    "size_gb": 27.94,
+    "checksum": "md5:67e59df277c444f8fc4295484e6ec250",
+    "url": "https://zenodo.org/api/records/15623217/files/SS-17%20GPS%20Static%20No%20Multipath%20True%20Position%20%E2%80%93%201%20Spoofer.bin/content"
+  },
+  {
+    "scenario": "SS18_no_multipath_2_spoofers",
+    "record_id": "15623318",
+    "original_key": "SS-18 GPS Static No Multipath True Position – 2 Spoofers.bin",
+    "out": "SS18_no_multipath_2_spoofers__SS-18_GPS_Static_No_Multipath_True_Position_-_2_Spoofers.bin",
+    "size_gb": 27.94,
+    "checksum": "md5:235762e69e6a8ff2309e2cd7c7a9d98f",
+    "url": "https://zenodo.org/api/records/15623318/files/SS-18%20GPS%20Static%20No%20Multipath%20True%20Position%20%E2%80%93%202%20Spoofers.bin/content"
+  },
+  {
+    "scenario": "SS20_no_multipath_4_spoofers",
+    "record_id": "15623460",
+    "original_key": "SS-20 GPS Static No Multipath True Position – 4 Spoofers.bin",
+    "out": "SS20_no_multipath_4_spoofers__SS-20_GPS_Static_No_Multipath_True_Position_-_4_Spoofers.bin",
+    "size_gb": 27.94,
+    "checksum": "md5:cc63804902fba0b01b0e7e6a1a56026d",
+    "url": "https://zenodo.org/api/records/15623460/files/SS-20%20GPS%20Static%20No%20Multipath%20True%20Position%20%E2%80%93%204%20Spoofers.bin/content"
+  },
+  {
+    "scenario": "C7_clean_multipath",
+    "record_id": "17413258",
+    "original_key": "Clearsky signal C-7.bin",
+    "out": "C7_clean_multipath__Clearsky_signal_C-7.bin",
+    "size_gb": 27.94,
+    "checksum": "md5:a03dedd79ac4208f6d60b4c916484dba",
+    "url": "https://zenodo.org/api/records/17413258/files/Clearsky%20signal%20C-7.bin/content"
+  },
+  {
+    "scenario": "SS27_multipath_1_spoofer",
+    "record_id": "15623799",
+    "original_key": "SS-27 GPS Static Multipath True Position – 1 Spoofer.bin",
+    "out": "SS27_multipath_1_spoofer__SS-27_GPS_Static_Multipath_True_Position_-_1_Spoofer.bin",
+    "size_gb": 27.94,
+    "checksum": "md5:9b73971348877078647610212d1bbba7",
+    "url": "https://zenodo.org/api/records/15623799/files/SS-27%20GPS%20Static%20Multipath%20True%20Position%20%E2%80%93%201%20Spoofer.bin/content"
+  },
+  {
+    "scenario": "SS28_multipath_2_spoofers",
+    "record_id": "15623920",
+    "original_key": "SS-28 GPS Static Multipath True Position – 2 Spoofers.bin",
+    "out": "SS28_multipath_2_spoofers__SS-28_GPS_Static_Multipath_True_Position_-_2_Spoofers.bin",
+    "size_gb": 27.94,
+    "checksum": "md5:5d30dec4848f2c621ab62fe0e8f3134d",
+    "url": "https://zenodo.org/api/records/15623920/files/SS-28%20GPS%20Static%20Multipath%20True%20Position%20%E2%80%93%202%20Spoofers.bin/content"
+  },
+  {
+    "scenario": "SS29_multipath_4_spoofers",
+    "record_id": "15624001",
+    "original_key": "SS-29 GPS Static Multipath True Position – 4 Spoofers.bin",
+    "out": "SS29_multipath_4_spoofers__SS-29_GPS_Static_Multipath_True_Position_-_4_Spoofers.bin",
+    "size_gb": 27.94,
+    "checksum": "md5:f821028e530bf3e56a24ef99f76977cd",
+    "url": "https://zenodo.org/api/records/15624001/files/SS-29%20GPS%20Static%20Multipath%20True%20Position%20%E2%80%93%204%20Spoofers.bin/content"
+  },
+  {
+    "scenario": "SS33_delayed_all_prns_spoofed",
+    "record_id": "17249727",
+    "original_key": "SS-33 GPS Delayed Spoofer Injection (All PRNs Spoofed).bin",
+    "out": "SS33_delayed_all_prns_spoofed__SS-33_GPS_Delayed_Spoofer_Injection_All_PRNs_Spoofed_.bin",
+    "size_gb": 37.253,
+    "checksum": "md5:2320ab15af06dd66bfe459094e24381e",
+    "url": "https://zenodo.org/api/records/17249727/files/SS-33%20GPS%20Delayed%20Spoofer%20Injection%20(All%20PRNs%20Spoofed).bin/content"
+  }
+]
