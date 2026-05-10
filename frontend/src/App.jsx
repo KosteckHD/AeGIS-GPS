@@ -4,7 +4,8 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
   ResponsiveContainer, ComposedChart, Bar, Legend
 } from 'recharts';
-import { Crosshair, RefreshCw, Activity, ShieldAlert, ShieldCheck, Wifi, WifiOff } from 'lucide-react';
+import { Crosshair, RefreshCw, Activity, ShieldAlert, ShieldCheck, Wifi, WifiOff, GitBranch } from 'lucide-react';
+import FeatureGraphPage from './components/FeatureGraphPage';
 
 // --- NARZĘDZIA POMOCNICZE ---
 const panelClass = "hud-panel pointer-events-auto bg-black/78 border border-emerald-300/35 backdrop-blur-xl rounded-sm shadow-[0_0_34px_rgba(16,185,129,0.12)]";
@@ -35,7 +36,7 @@ const lineAnimation = { isAnimationActive: true, animationDuration: 450, animati
 // ==========================================
 // SEKCJA 1: NAVBAR
 // ==========================================
-const NavbarSection = ({ dataCount, isConnected }) => (
+const NavbarSection = ({ dataCount, isConnected, onShowFeatureGraph }) => (
   <div className={`${panelClass} p-4 flex flex-col gap-3 min-w-[320px]`}>
     <div className="flex items-center gap-3 border-b border-emerald-400/20 pb-3">
       <ShieldCheck size={24} className="text-emerald-300 drop-shadow-[0_0_10px_rgba(52,211,153,0.7)]" />
@@ -64,6 +65,12 @@ const NavbarSection = ({ dataCount, isConnected }) => (
         </span>
       </div>
     </div>
+    <button
+      onClick={onShowFeatureGraph}
+      className="flex items-center justify-center gap-2 text-[11px] font-semibold tracking-[0.12em] uppercase border border-emerald-300/28 bg-emerald-300/8 text-emerald-100 px-3 py-2 rounded-sm hover:bg-emerald-300/14 hover:border-emerald-200/55 transition-all"
+    >
+      <GitBranch size={14} /> Feature Graph
+    </button>
   </div>
 );
 
@@ -368,6 +375,7 @@ const StatsSection = ({ alerts, chartData, handleLockOnTarget }) => (
 // GŁÓWNY KOMPONENT / APLIKACJA
 // ==========================================
 const SOCDashboard = () => {
+  const [currentView, setCurrentView] = useState('dashboard');
   const [dataStream, setDataStream] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [, setCompromisedIds] = useState(() => new Set());
@@ -382,7 +390,7 @@ const SOCDashboard = () => {
   const MAX_POINTS_PER_DRONE = 50;
 
   useEffect(() => {
-    const eventSource = new EventSource('http://localhost:8000/stream');
+    const eventSource = new EventSource('http://192.168.1.235:8000/stream');
     
     eventSource.onopen = () => setIsConnected(true);
 
@@ -529,6 +537,10 @@ const SOCDashboard = () => {
   const focusedStream = focusedDroneId ? dataStream.filter(d => d.mId === focusedDroneId) : dataStream;
   const chartData = focusedStream.slice(-30);
 
+  if (currentView === 'feature-graph') {
+    return <FeatureGraphPage onBack={() => setCurrentView('dashboard')} />;
+  }
+
   return (
     <div className="hacker-root relative w-screen h-screen bg-[#010302] text-emerald-200 font-mono overflow-hidden selection:bg-emerald-900/70">
       
@@ -549,7 +561,11 @@ const SOCDashboard = () => {
         <div className="flex justify-between items-start w-full">
           {/* Lewa strona */}
           <div className="flex flex-col gap-3">
-            <NavbarSection dataCount={dataStream.length} isConnected={isConnected} />
+            <NavbarSection
+              dataCount={dataStream.length}
+              isConnected={isConnected}
+              onShowFeatureGraph={() => setCurrentView('feature-graph')}
+            />
             <ActiveTargetsList activeDrones={activeDrones} focusedDroneId={focusedDroneId} handleLockOnTarget={handleLockOnTarget} />
           </div>
 
