@@ -1,0 +1,27 @@
+https://zenodo.org/api/records/15572976/files/Clear-Sky%20Signal%20C-5.bin/content
+  dir=/workspace/gps-spoofing/raw
+  out=C5_clean_no_multipath__Clear-Sky_Signal_C-5.bin
+https://zenodo.org/api/records/15623217/files/SS-17%20GPS%20Static%20No%20Multipath%20True%20Position%20%E2%80%93%201%20Spoofer.bin/content
+  dir=/workspace/gps-spoofing/raw
+  out=SS17_no_multipath_1_spoofer__SS-17_GPS_Static_No_Multipath_True_Position_-_1_Spoofer.bin
+https://zenodo.org/api/records/15623318/files/SS-18%20GPS%20Static%20No%20Multipath%20True%20Position%20%E2%80%93%202%20Spoofers.bin/content
+  dir=/workspace/gps-spoofing/raw
+  out=SS18_no_multipath_2_spoofers__SS-18_GPS_Static_No_Multipath_True_Position_-_2_Spoofers.bin
+https://zenodo.org/api/records/15623460/files/SS-20%20GPS%20Static%20No%20Multipath%20True%20Position%20%E2%80%93%204%20Spoofers.bin/content
+  dir=/workspace/gps-spoofing/raw
+  out=SS20_no_multipath_4_spoofers__SS-20_GPS_Static_No_Multipath_True_Position_-_4_Spoofers.bin
+https://zenodo.org/api/records/17413258/files/Clearsky%20signal%20C-7.bin/content
+  dir=/workspace/gps-spoofing/raw
+  out=C7_clean_multipath__Clearsky_signal_C-7.bin
+https://zenodo.org/api/records/15623799/files/SS-27%20GPS%20Static%20Multipath%20True%20Position%20%E2%80%93%201%20Spoofer.bin/content
+  dir=/workspace/gps-spoofing/raw
+  out=SS27_multipath_1_spoofer__SS-27_GPS_Static_Multipath_True_Position_-_1_Spoofer.bin
+https://zenodo.org/api/records/15623920/files/SS-28%20GPS%20Static%20Multipath%20True%20Position%20%E2%80%93%202%20Spoofers.bin/content
+  dir=/workspace/gps-spoofing/raw
+  out=SS28_multipath_2_spoofers__SS-28_GPS_Static_Multipath_True_Position_-_2_Spoofers.bin
+https://zenodo.org/api/records/15624001/files/SS-29%20GPS%20Static%20Multipath%20True%20Position%20%E2%80%93%204%20Spoofers.bin/content
+  dir=/workspace/gps-spoofing/raw
+  out=SS29_multipath_4_spoofers__SS-29_GPS_Static_Multipath_True_Position_-_4_Spoofers.bin
+https://zenodo.org/api/records/17249727/files/SS-33%20GPS%20Delayed%20Spoofer%20Injection%20(All%20PRNs%20Spoofed).bin/content
+  dir=/workspace/gps-spoofing/raw
+  out=SS33_delayed_all_prns_spoofed__SS-33_GPS_Delayed_Spoofer_Injection_All_PRNs_Spoofed_.bin
